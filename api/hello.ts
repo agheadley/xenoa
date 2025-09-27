@@ -1,9 +1,8 @@
 
 export default {
-  fetch (request, response) {
+  fetch (request) {
     let name = request.body.name;
-    response.status(200);
-    response.json({ message: 'It works',body:JSON.stringify(request.body.name)});
+    return new Response(JSON.stringify(request.body));
   }
 };
 
