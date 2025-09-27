@@ -1,6 +1,3 @@
-export default (request,response) => {
-  //let name = request.body.name;
-  //response.status(200).json({results:`Hello ${name}!`});
-  response.status(200);
-  response.json({ message: 'It works',body:'Hello from vercel!'});
-};
+export function GET(request: Request) {
+  return new Response('Hello from Vercel!');
+}
