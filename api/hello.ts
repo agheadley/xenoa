@@ -1,6 +1,7 @@
-export default async function handler(req, res) {
-  const { body } = req;
+import type { VercelRequest, VercelResponse } from '@vercel/node';
 
-  console.log(body);
-  return res.send(body);
-}
+export default (request: VercelRequest, response: VercelResponse) => {
+  let name = request.body.name;
+  response.status(200);
+  response.json({ message: 'It works',body:JSON.stringify(request.body.name)});
+};
