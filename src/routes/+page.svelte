@@ -1,7 +1,21 @@
 <script lang="ts">
-	import Counter from './Counter.svelte';
-	import welcome from '$lib/images/svelte-welcome.webp';
-	import welcomeFallback from '$lib/images/svelte-welcome.png';
+import { json } from '@sveltejs/kit';
+
+let headers= {
+    'Access-Control-Request-Headers': '*',
+    'Content-Type': 'application/json'
+};
+
+let body={name:'Leia'};
+
+let test=async()=>{
+
+	 let response = await fetch('api/hello',{method: 'POST',headers: headers,body:JSON.stringify(body)});
+	 let res=await response.json();
+	 console.log('returned ...',res);
+    
+};
+
 </script>
 
 <svelte:head>
@@ -9,51 +23,9 @@
 	<meta name="description" content="Svelte demo app" />
 </svelte:head>
 
-<section>
-	<h1>
-		<span class="welcome">
-			<picture>
-				<source srcset={welcome} type="image/webp" />
-				<img src={welcomeFallback} alt="Welcome" />
-			</picture>
-		</span>
 
-		to your new<br />SvelteKit app
-	</h1>
-
-	<h2>
-		try editing <strong>src/routes/+page.svelte</strong>
-	</h2>
-
-	<Counter />
-</section>
-
+<p>Hello from sveltekit!</p>
+<p><button onclick={test}>Test</button></p>
 <style>
-	section {
-		display: flex;
-		flex-direction: column;
-		justify-content: center;
-		align-items: center;
-		flex: 0.6;
-	}
-
-	h1 {
-		width: 100%;
-	}
-
-	.welcome {
-		display: block;
-		position: relative;
-		width: 100%;
-		height: 0;
-		padding: 0 0 calc(100% * 495 / 2048) 0;
-	}
-
-	.welcome img {
-		position: absolute;
-		width: 100%;
-		height: 100%;
-		top: 0;
-		display: block;
-	}
+	
 </style>
