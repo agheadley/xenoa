@@ -10,7 +10,7 @@ let body={name:'Leia'};
 
 let test=async()=>{
 
-	 let response = await fetch('db/test2',{method: 'POST',headers: headers,body:JSON.stringify(body)});
+	 let response = await fetch('hooks/quotation',{method: 'POST',headers: headers,body:JSON.stringify(body)});
 	 let res=await response.json();
 	 console.log('returned ...',res);
     
