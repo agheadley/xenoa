@@ -36,6 +36,11 @@
 	},
 	"dependencies": {
 		"@pcassima/odoo-jsonrpc": "^1.0.3",
-		"@vercel/node": "^5.3.24"
+		"@supabase/ssr": "^0.7.0",
+		"@supabase/supabase-js": "^2.58.0",
+		"@vercel/node": "^5.3.24",
+		"pdf-lib": "^1.17.1",
+		"resend": "^6.1.1",
+		"tus-js-client": "^4.3.1"
 	}
 }

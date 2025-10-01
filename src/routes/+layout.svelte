@@ -1,19 +1,52 @@
 <script lang="ts">
+	import Header from './Header.svelte';
+	import Footer from './Footer.svelte';
 	import '../app.css';
 
-	let { children } = $props();
-</script>
+	import * as icon from '$lib/icon';
+	import { invalidate } from '$app/navigation';
+	import { page } from '$app/state';
+	import { onMount } from 'svelte'
+	import Alert from '$lib/Alert.svelte';
+	let { data, children } = $props()
+	let { session, supabase } = $derived(data)
 
-<div class="app">
 	
+
+
+	$effect(()=>{
+	//console.log(session);
+});
+
+onMount(() => {
+
+	console.log('/+layout.svelte');
+    const { data } = supabase.auth.onAuthStateChange((_, newSession) => {
+      if (newSession?.expires_at !== session?.expires_at) {
+        invalidate('supabase:auth')
+      }
+    })
+    return () => data.subscription.unsubscribe()
+})
+
+</script>
+<Alert></Alert>
+<div class="app">
+	{#key session}
+	<Header bind:session/>
+	{/key}
+
+
 	<main>
-		{@render children()}
+		<div class="container">
+			{@render children()}
+		</div>
+		
 	</main>
 
-	<footer>
-		<p>
-		</p>
-	</footer>
+	<Footer />
+
+	
 </div>
 
 <style>
@@ -21,7 +54,11 @@
 		display: flex;
 		flex-direction: column;
 		min-height: 100vh;
+		background:white;
 	}
+
+
+
 
 	main {
 		flex: 1;
@@ -30,22 +67,13 @@
 		padding: 1rem;
 		width: 100%;
 		max-width: 64rem;
-		margin: 0 auto;
+		margin: 7rem auto;
 		box-sizing: border-box;
+		font-size:1.6rem;
+		
 	}
 
-	footer {
-		display: flex;
-		flex-direction: column;
-		justify-content: center;
-		align-items: center;
-		padding: 12px;
-	}
+	
 
-
-	@media (min-width: 480px) {
-		footer {
-			padding: 12px 0;
-		}
-	}
+	
 </style>
