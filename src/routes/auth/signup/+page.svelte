@@ -12,9 +12,7 @@
 
 <p>Please check your email for confirmation. (Check spam folder if it does not arrive)</p>
 
-<div class="card">
-  <p>The implantify team will review your application. Please check your email.</p>
-</div>
+
 
 
 <p><a href="/private" class="button primary">Portal Home</a></p>

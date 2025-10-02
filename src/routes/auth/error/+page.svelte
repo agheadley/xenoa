@@ -10,7 +10,7 @@
 
 
 
-<h3 class="text-error">Sign in error. Please check user is APPROVED and email/password is correct.</h3>
+<h3>Sign in error. Please check user is APPROVED and email/password is correct.</h3>
 
 <p><a href="/private" class="button primary">Portal Home</a></p>
 

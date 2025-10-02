@@ -8,7 +8,7 @@
 	<meta name="description" content="Implantify" />
 </svelte:head>
 
-<h3>Sign In link sent</h3>
+<h3>Sign In / Reset link sent</h3>
 
 <p>Please check your email. (Check spam folder if it does not arrive)</p>
 
