@@ -12,7 +12,6 @@ create table public.profiles (
   first_name text,
   last_name text,
   institution text,
-  telephone text,
   email text,
   is_admin boolean default false,
   is_staff boolean default false,
