@@ -4,6 +4,8 @@ import { sequence } from '@sveltejs/kit/hooks'
 
 import { PUBLIC_SUPABASE_URL, PUBLIC_SUPABASE_ANON_KEY } from '$env/static/public'
 
+
+
 const supabase: Handle = async ({ event, resolve }) => {
   /**
    * Creates a Supabase client specific to this server request.
@@ -81,7 +83,11 @@ const authGuard: Handle = async ({ event, resolve }) => {
   for(let item of cfg) {
     cfgx[item.type]=item.data;
   }
+
+  console.log(event.locals);
   event.locals.cfg=cfgx;
+  //console.log(cfgx);
+
   */
   /* / end of config data */
   

@@ -8,7 +8,7 @@
 	<meta name="description" content="Implantify" />
 </svelte:head>
 
-<h1>Oops! Authentication Error</h1>
+
 
 <h3 class="text-error">Sign in error. Please check user is APPROVED and email/password is correct.</h3>
 

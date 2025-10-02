@@ -8,12 +8,13 @@
 	<meta name="description" content="Implantify" />
 </svelte:head>
 
-<h1>Sign Up Completed</h1>
+<h3>Sign Up Completed</h3>
 
-<h3>Please check your email for confirmation. (Check spam folder if it does not arrive)</h3>
+<p>Please check your email for confirmation. (Check spam folder if it does not arrive)</p>
 
-
-<h3 class="text-error">You will not be able to create/update orders until you have been approved as a user. Please wait for further communication</h3>
+<div class="card">
+  <p>The implantify team will review your application. Please check your email.</p>
+</div>
 
 
 <p><a href="/private" class="button primary">Portal Home</a></p>

@@ -11,7 +11,7 @@ let { data }: { data: PageData } = $props();
 
 let showModal : boolean = $state(true);
 
-let authType=$state({list:['OTP','Link','Password','Sign Up'],index:0});
+let authType=$state({list:['Email Link','Password','Sign Up'],index:0});
 
 let next='/xyz';
 
@@ -57,16 +57,16 @@ let swap=(index:number)=>{
 
 
 <p>&nbsp;</p>
-<h4>User Sign In or Sign Up ( New User)</h4>
+<h4>Customer Portal</h4>
 <p>&nbsp;</p>
 
 
 
 <div class="row">
-	<div class="col-2">
+	<div class="col-1">
 
 	</div>
-	<div class="col-8">
+	<div class="col-10">
 
 
 		<nav class="tabs is-full">
@@ -77,19 +77,16 @@ let swap=(index:number)=>{
 		</nav>
 
 		</div>
-	<div class="col-2">
+	<div class="col-1">
 		
 	</div>
 </div>
 		
 	 	<form method="POST" action={`?/login`} >
-		{#if authType.list[authType.index]==='OTP'}
+		
 
-		<p>Sign In with OTP via WhatsApp</p>
-		{/if}
-
-		{#if authType.list[authType.index]==='Link'}
-		<p>Sign In with Email Link</p>
+		{#if authType.list[authType.index]==='Email Link'}
+		<p>Send an Email Sign In Link</p>
 		<p>
 			<input name="email" type="email" placeholder="email" autocomplete="on"/>
         </p>
@@ -119,7 +116,7 @@ let swap=(index:number)=>{
 		{/if}
 
 		{#if authType.list[authType.index]==='Sign Up'}
-	  		<p>Apply to become a user</p>
+	  		<p>Apply to Become a Portal User</p>
 				 <p>
 		
 		<label for="email">Email</label>
@@ -141,7 +138,7 @@ let swap=(index:number)=>{
 
 
 		<p>
-			<button  disabled={!details.isValid} class="button primary" formaction={`?/signup`}>Apply</button>
+			<button  disabled={!details.isValid} class="button primary" formaction={`?/signup`}>Send Application</button>
 			
 		</p>
 

@@ -44,7 +44,7 @@ function closeNav() {
 		{:else}
 
 
-		<a href="https://www.implantify.eu/">Home</a>
+		<a href="https://www.implantify.eu/" target="_blank">Implantify</a>
 		<a href="https://www.implantify.eu/medical" target="_blank">Medical</a>
 		<a href="https://www.implantify.eu/dental" target="_blank">Dental</a>
 		<a href="https://www.implantify.eu/about-us" target="_blank">About us</a>
@@ -56,7 +56,7 @@ function closeNav() {
 		{#if session && session?.user?.email!==''}
 		<a href={'/auth/signout'}>{@html icon.signout(24)}</a>
 		{:else}
-		<a data-sveltekit-reload href={'/auth/signin'}>{@html icon.signin(24)}</a>
+		<a data-sveltekit-reload href={'/'}>{@html icon.signin(24)}</a>
 		{/if}
 
 				
@@ -79,7 +79,7 @@ function closeNav() {
 				<li><a href="https://www.implantify.eu/">Home</a></li>
 				
 			{:else}
-					<li><a href="https://www.implantify.eu/">Home</a></li>
+					<li><a href="https://www.implantify.eu/" target="_blank">Implantify</a></li>
 					<li><a href="https://www.implantify.eu/medical" target="_blank">Medical</a></li>
 					<li><a href="https://www.implantify.eu/dental" target="_blank">Dental</a></li>
 					<li><a href="https://www.implantify.eu/about-us" target="_blank">About us</a></li>
@@ -95,7 +95,7 @@ function closeNav() {
 		
 			<li><a href={'/auth/signout'}>{@html icon.signout(24)}</a></li>
 			{:else}
-			<li><a data-sveltekit-reload href={'/auth/signin'}>{@html icon.signin(24)}</a></li>
+			<li><a data-sveltekit-reload href={'/'}>{@html icon.signin(24)}</a></li>
 			{/if}
 			
 		
