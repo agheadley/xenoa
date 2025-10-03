@@ -74,14 +74,14 @@ onMount(async() => {
 {/if}
 
 {#if menu.list[menu.index]==='Me'}
-    <Reset bind:isUpdate={isUpdate} supabase={supabase}></Reset>
+    <Reset bind:isUpdate={isUpdate} supabase={supabase} account={account}></Reset>
 {/if}
 {/if} <!-- /staff-->
 
 
 
 {#if !account.isStaff}
-     <Reset bind:isUpdate={isUpdate} supabase={supabase}></Reset>
+     <Reset bind:isUpdate={isUpdate} supabase={supabase} account={account}></Reset>
 {/if}
 
 

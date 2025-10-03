@@ -22,7 +22,7 @@ const updateDb=async():Promise<{isOK:boolean,msg:string}>=>{
     console.log(data,error);
     if(!data?.user?.email)  return {isOK:false,msg:'error creating user'};
 
-    let res=await log(account.id,account.email,'profiles',`Added user ${details.email} ${details.first_name} ${details.last_name}`);
+    let res=await log(account.id,account.email,'profiles',`New User ${details.email} ${details.first_name} ${details.last_name}`);
     if(!res.isOK) return {isOK:false,msg:'user added, but error logging user creation'};
 
     return {isOK:true,msg:'user created'}

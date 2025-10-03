@@ -1,7 +1,9 @@
 <script lang="ts">
 import {alert} from '$lib/state.svelte';
+import {email,log} from '$lib/util';
+import {PUBLIC_URL} from '$env/static/public';
 
-let { isUpdate = $bindable(),supabase} = $props();
+let { isUpdate = $bindable(),supabase,account} = $props();
 
 let details=$state({email:'',password:'',passwordB:'',first_name:'',last_name:'',institution:'',isValid:false,isValidPassword:false,isValidEmail:false});
 
@@ -17,7 +19,16 @@ const updateDb=async():Promise<{isOK:boolean,msg:string}>=>{
     console.log(data,error);
     if(data.error)  return {isOK:false,msg:'error reseting password'};
 
+   
+
+    let res=await email(account.email, 'Implantify Password Changed', `<p>You have changed your password for the Implantify Portal</p><p>Sign In at <a href="${PUBLIC_URL}">Implantify</a></p><p>If this wasn't you please contact the implantify team. You can use the Email Link sign in to access the portal and change your password.</p>`);
+    if(!res.isOK) return {isOK:false,msg:'password changed, but error sending email'};
+
+    let l=await log(account.id,account.email,'users',`Password Change ${account.email} , ${account.id}`)
+    if(!l.isOK) return {isOK:false,msg:'password changed, but error logging user approval'};
+
     return {isOK:true,msg:'password reset'};
+
 };
 
 const resetPassword=async()=>{
@@ -44,6 +55,7 @@ const validateReset=()=>{
 
 
 </script>
+
 
 
  <div class="row">
