@@ -185,6 +185,32 @@ USING (public.is_admin_user(auth.uid()))
 ```
 
 
+# jobs
+
+```
+create table public.jobs (
+  id int primary key generated always as identity,
+  staff_id uuid,
+  customer_id uuid not null,
+  customer_ref text not null default format(''::text),
+  first_name text not null default format(''::text),
+  last_name text not null default format(''::text),
+  customer_email text not null default format(''::text),
+  staff_email text not null default format(''::text),
+  type text not null default format(''::text),
+  levels jsonb not null default '[0, 0, 0, 0, 0]'::jsonb,
+  created_at timestamp with time zone DEFAULT now()
+);
+
+alter table jobs enable row level security;
+
+CREATE POLICY "User ALL for own jobs, staff ALL for all jobs"
+ON public.jobs
+FOR ALL
+TO authenticated
+USING (public.is_staff_user(auth.uid()) or auth.uid() = customer_id)
+WITH CHECK (public.is_staff_user(auth.uid()) or auth.uid() = customer_id);
+```
 
 
 

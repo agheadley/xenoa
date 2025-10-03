@@ -40,7 +40,7 @@ function closeNav() {
 		{#if session && session?.user?.email!==''}
 				<a href="/private">Orders</a>
 				<a href="/private/account">Account</a>
-				<a href="https://www.implantify.eu/">Home</a>
+				<a href="https://www.implantify.eu/" target="_blank">Home</a>
 		{:else}
 
 
@@ -81,7 +81,7 @@ function closeNav() {
 			{#if session && session?.user?.email!==''}
 				<li><a href="/private">Orders</a></li>
 				<li><a href="/private/account">Account</a></li>
-				<li><a href="https://www.implantify.eu/">Home</a></li>
+				<li><a href="https://www.implantify.eu/" target="_blank">Home</a></li>
 				
 			{:else}
 					<li><a href="https://www.implantify.eu/" target="_blank">Home</a></li>
