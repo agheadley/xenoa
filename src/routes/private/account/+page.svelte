@@ -2,11 +2,11 @@
 
 import {alert} from '$lib/state.svelte';
 import type { EventHandler } from 'svelte/elements';
-import {supabaseB} from '$lib/supabaseClient.js';
+//import {supabaseB} from '$lib/supabaseClient.js';
 import { onMount } from 'svelte';
 import { invalidate } from '$app/navigation';
-import Modal from '$lib/Modal.svelte';
-import {log,email} from '$lib/util';
+//import Modal from '$lib/Modal.svelte';
+//import {log,email} from '$lib/util';
 import NewUser from './NewUser.svelte';
 import Reset from './Reset.svelte';
 import Staff from './Staff.svelte';

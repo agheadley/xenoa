@@ -22,6 +22,7 @@ const openStatus=(index:number)=>{
     showModal=true;
 };
 
+
 const updateDbStaff=async():Promise<{isOK:boolean,msg:string}>=>{
 
     const { data, error } = await supabase
@@ -30,12 +31,21 @@ const updateDbStaff=async():Promise<{isOK:boolean,msg:string}>=>{
         .eq('id', profiles[approveIndex].id)
         .select();
     if (error) return {isOK:false,msg:'error changing user staff status'};
-    let res=await email(profiles[approveIndex].email, 'Implantify User Status Changed to Staff', `<p>You have been promoted to staff</p><p>Sign In at <a href="${PUBLIC_URL}">Implantify</a></p>`);
+
+
+    const cc=profiles?.[0] ? profiles.filter((el: { is_admin: boolean; })=>el.is_admin===true).map((el: { email: any; })=>el.email) : [];
+    
+
+    let res=await email(profiles[approveIndex].email, 'New Staff User', `<p>${profiles[approveIndex].email} is now a STAFF USER</p><p>Sign In at <a href="${PUBLIC_URL}">Implantify</a></p>`,cc);
     if(!res.isOK) return {isOK:false,msg:'user status staff ok,but error sending email'};
 
     let l=await log(account.id,account.email,'profiles',`User ${profiles[approveIndex].email} status changed to staff`)
     if(!l.isOK) return {isOK:false,msg:'user status staff ok, but error logging user approval'};
     
+
+   
+    
+
     return {isOK:true,msg:'user status changed to staff'};
 
 
@@ -53,12 +63,17 @@ const updateDbApprove=async():Promise<{isOK:boolean,msg:string}>=>{
 
     if (error) return {isOK:false,msg:'error approving user'};
 
-    let res=await email(profiles[approveIndex].email, 'Implantify User Approved', `<p>You have been approved as a user!</p><p>Sign In at <a href="${PUBLIC_URL}">Implantify</a></p>`);
+    const cc=profiles?.[0] ? profiles.filter((el: { is_admin: boolean; })=>el.is_admin===true).map((el: { email: any; })=>el.email) : [];
+  
+    let res=await email(profiles[approveIndex].email, 'Implantify User Approved', `<p>${profiles[approveIndex].email } is APPROVED as a user.</p><p>Sign In at <a href="${PUBLIC_URL}">Implantify</a></p>`,cc);
     if(!res.isOK) return {isOK:false,msg:'user approved,but error sending email'};
 
     let l=await log(account.id,account.email,'profiles',`User ${profiles[approveIndex].email} approved`)
     //console.log('l log',l);
     if(!l.isOK) return {isOK:false,msg:'user approved, but error logging user approval'};
+
+   
+
 
     return {isOK:true,msg:'user approved'};
 };
@@ -155,7 +170,7 @@ const updateStatus=async()=>{
         {/if}
         <p>Type <span class="strong text-error">reject user</span> to delete user</p>
         {#if profiles[approveIndex].is_approved}
-        <p>Type <span class="strong text-error">change to staff</span> if the user is a staff member</p>
+        <p>Type <span class="strong text-error">change to staff</span> to make the customer a member of staff</p>
         {/if}
         <p>
             <input bind:value={approveText} type="text" />

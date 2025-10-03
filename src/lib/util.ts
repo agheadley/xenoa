@@ -25,24 +25,12 @@ export const getStagedFileName=(filename:string,stage:string|null,order_id:numbe
 
 
 
-export const emailAdminList=async(html:string,type:string = 'is_admin'):Promise<{isOK:boolean,msg:string}>=>{
-    const query = type==='is_admin' ? 'is_admin' : 'is_staff';
-     const response = await fetch('/private/api/email/admin', {
-        method: 'POST',
-        body: JSON.stringify({type:query,html:html}),
-        headers: {'content-type': 'application/json'}
-    });
-    const res= await response.json();
-    
-   
-    return res.error===null ? {isOK:true,msg:'email sent'} : {isOK:true,msg:res.error};
-};
 
 
-export const email=async(to:string,subject:string,html:string):Promise<{isOK:boolean,msg:string}>=>{
+export const email=async(to:string,subject:string,html:string,cc:string[]=[]):Promise<{isOK:boolean,msg:string}>=>{
     const response = await fetch('/private/api/email/general', {
         method: 'POST',
-        body: JSON.stringify({to:to,html:html,subject:subject}),
+        body: JSON.stringify({to:to,html:html,subject:subject,cc:cc}),
         headers: {'content-type': 'application/json'}
     });
     const res= await response.json();

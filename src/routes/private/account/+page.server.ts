@@ -1,5 +1,5 @@
 import type { PageServerLoad } from './$types';
-import {supabaseB} from '$lib/supabaseClient.js';
+//import {supabaseB} from '$lib/supabaseClient.js';
 
 //import { createClient } from '@supabase/supabase-js';
 export const load: PageServerLoad = async ({ depends, locals: { supabase } }) => {

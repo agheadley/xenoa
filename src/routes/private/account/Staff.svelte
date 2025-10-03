@@ -37,7 +37,7 @@ const deleteUser=async()=>{
 };
 
 const updateStatus=async()=>{
-    console.log('not implemented!!!');
+    //console.log('not implemented!!!');
 
     const is_admin = statusText==='add admin status' ? true : false;
 
