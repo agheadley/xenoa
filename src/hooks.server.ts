@@ -34,12 +34,14 @@ const supabase: Handle = async ({ event, resolve }) => {
    * JWT before returning the session.
    */
   event.locals.safeGetSession = async () => {
+    
     const {
       data: { session },
     } = await event.locals.supabase.auth.getSession()
     if (!session) {
       return { session: null, user: null }
     }
+    
 
     const {
       data: { user },

@@ -3,7 +3,7 @@ import {alert} from '$lib/state.svelte';
 import { onMount } from 'svelte';
 import Modal from '$lib/Modal.svelte';
 import {log,email} from '$lib/util';
-
+import {PUBLIC_URL} from '$env/static/public';
 
 let { isUpdate = $bindable(),supabase,profiles,account} = $props();
 
@@ -30,8 +30,7 @@ const updateDbStaff=async():Promise<{isOK:boolean,msg:string}>=>{
         .eq('id', profiles[approveIndex].id)
         .select();
     if (error) return {isOK:false,msg:'error changing user staff status'};
-
-    let res=await email(profiles[approveIndex].email, 'Implantify User Status Changed to Staff', `<p>You have been promoted to staff</p><p>Login at <a href="https://portal.implantify.eu/auth/signin">Implantify</a></p>`);
+    let res=await email(profiles[approveIndex].email, 'Implantify User Status Changed to Staff', `<p>You have been promoted to staff</p><p>Sign In at <a href="${PUBLIC_URL}">Implantify</a></p>`);
     if(!res.isOK) return {isOK:false,msg:'user status staff ok,but error sending email'};
 
     let l=await log(account.id,account.email,'profiles',`User ${profiles[approveIndex].email} status changed to staff`)
@@ -54,7 +53,7 @@ const updateDbApprove=async():Promise<{isOK:boolean,msg:string}>=>{
 
     if (error) return {isOK:false,msg:'error approving user'};
 
-    let res=await email(profiles[approveIndex].email, 'Implantify User Approved', `<p>You have been approved as a user!</p><p>Login at <a href="https://portal.implantify.eu/auth/signin">Implantify</a></p>`);
+    let res=await email(profiles[approveIndex].email, 'Implantify User Approved', `<p>You have been approved as a user!</p><p>Sign In at <a href="${PUBLIC_URL}">Implantify</a></p>`);
     if(!res.isOK) return {isOK:false,msg:'user approved,but error sending email'};
 
     let l=await log(account.id,account.email,'profiles',`User ${profiles[approveIndex].email} approved`)

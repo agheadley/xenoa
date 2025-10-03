@@ -14,7 +14,7 @@
 <div class="card">
   <p>The implantify team will review your application. Please check your email. Once approved you can create an order.</p>
 </div>
-
+<p>&nbsp;</p>
 <p><a href="/" class="button primary">Portal Home</a></p>
 
 <style>

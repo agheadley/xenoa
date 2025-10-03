@@ -117,7 +117,9 @@ http://localhost:5173/**
 - Reset Password
 
 ```
-<p>Follow this link to reset the password</p>
+<p><img style="margin: 0; border: 0; padding: 0; display: block;" width="300" src="https://portal.implantify.eu/_app/immutable/assets/logo.2wviG-VA.png"/></p>
+
+<h2>Reset Yor Password</h2>
 
 <p>
 <a href="{{ .SiteURL }}/auth/confirm?token_hash={{ .TokenHash }}&type=email&next=/private/account">Reset Password<a>
@@ -126,23 +128,63 @@ http://localhost:5173/**
 ```
 - Magic Link
 ```
-<h2>Log in Magic Link</h2>
+<p><img style="margin: 0; border: 0; padding: 0; display: block;" width="300" src="https://portal.implantify.eu/_app/immutable/assets/logo.2wviG-VA.png"/></p>
 
-<p>Follow this link to login:</p>
+<h2>Sign In Link</h2>
+
 <!--<p><a href="{{ .SiteURL }}?token_hash={{ .TokenHash }}&type=email">Log In</a></p>-->
 <p><a href="{{ .SiteURL }}/auth/confirm?token_hash={{ .TokenHash }}&type=email&next=/private">Log In</a></p>
 ```
 
 - Confirm SignUp
 ```
-<h2>Confirm your signup</h2>
+<p><img style="margin: 0; border: 0; padding: 0; display: block;" width="300" src="https://portal.implantify.eu/_app/immutable/assets/logo.2wviG-VA.png"/></p>
 
-<p>Follow this link to confirm your user:</p>
+<h2>Confirm your Sign Up</h2>
 
 <p>
 <a href="{{ .SiteURL }}/auth/confirm?token_hash={{ .TokenHash }}&type=email&next=/auth/landing">Confirm your email<a>
 </p>
 ```
+
+
+
+
+# log
+
+```
+create table public.log (
+    id int primary key generated always as identity,
+    table_name text not null default format(''::text),
+    log text not null default format(''::text),
+    user_id uuid not null,
+    user_email text not null default format(''::text),
+    created_at timestamp with time zone DEFAULT now()
+ 
+  
+);
+
+alter table log enable row level security;
+
+CREATE POLICY "Staff can view all log,customers only their own"
+ON public.log
+FOR SELECT
+TO authenticated
+USING (public.is_staff_user(auth.uid()) or auth.uid() = user_id);
+
+CREATE POLICY "Users or staff can create an log"
+ON public.log FOR INSERT
+TO authenticated
+WITH CHECK ( ((select auth.uid()) = user_id) or (public.is_staff_user(auth.uid())) ); 
+
+CREATE POLICY "only admin can delete all"
+ON public.log FOR DELETE
+TO authenticated
+USING (public.is_admin_user(auth.uid()))
+
+```
+
+
 
 
 
