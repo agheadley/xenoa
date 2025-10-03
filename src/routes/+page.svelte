@@ -1,12 +1,7 @@
-
-
-
-
-
-
-
 <script lang="ts">
 import type { PageData } from './$types';
+import Modal from '$lib/Modal.svelte';
+
 let { data }: { data: PageData } = $props();
 
 let showModal : boolean = $state(true);
@@ -55,6 +50,17 @@ let swap=(index:number)=>{
 	<meta name="description" content="Implantify" />
 </svelte:head>
 
+{#if showModal}
+<Modal bind:showModal>
+    {#snippet header()}
+    <h3>portal.implantify.eu</h3>
+    {/snippet} 
+	<p>
+		This site only uses essential cookies for user authentication. No other cookies are stored.
+	</p>
+	<p><button class="button outline" onclick={()=>showModal=false}>Close</button></p>
+</Modal>
+{/if}
 
 <p>&nbsp;</p>
 <h4>Customer Portal</h4>
