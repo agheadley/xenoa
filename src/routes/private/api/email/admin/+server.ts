@@ -1,4 +1,4 @@
-import { PUBLIC_PRODUCTION_SUPABASE_URL } from '$env/static/public';
+import { PUBLIC_SUPABASE_URL } from '$env/static/public';
 import {SUPABASE_SERVICE_ROLE_KEY} from '$env/static/private';
 import { json } from '@sveltejs/kit';
 import {RESEND_KEY} from '$env/static/private'
@@ -25,7 +25,7 @@ export async function POST({request}) {
     const req = await request.json();
 
     //const url  =`${SUPABASE_URL}/rest/v1/assessment_table?id=eq.${req.id}&select=${select}`;
-    let url  =`${PUBLIC_PRODUCTION_SUPABASE_URL}/rest/v1/profiles?limit=2000&select=email&${req.type}=eq.true`;
+    let url  =`${PUBLIC_SUPABASE_URL}/rest/v1/profiles?limit=2000&select=email&${req.type}=eq.true`;
     
 
     let response = await fetch(url,{method: 'GET',headers: headers});
