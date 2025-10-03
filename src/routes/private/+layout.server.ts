@@ -26,7 +26,7 @@ export const load: LayoutServerLoad = async ({ locals: { safeGetSession ,supabas
     account.isAdmin = f.is_admin;
     const isApproved = f.is_approved === true ? true : false;
     //console.log('+layout.server.ts',{isApproved});
-    if(!isApproved) redirect(303, '/auth/approve'); 
+    if(!isApproved) redirect(303, '/auth/landing'); 
 
 
   
