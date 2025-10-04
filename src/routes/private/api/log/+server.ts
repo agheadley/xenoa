@@ -1,5 +1,13 @@
 import { json } from '@sveltejs/kit';
 
+
+/**
+ * Insert log record
+ * req.data {id:number,table_name_string,log_string,user_id:string,user_email:string,created_at:string}
+ * @returns {{isOK:boolean,msg:{}|string}}
+ */
+
+
 export async function POST({request,locals}) {
     const req = await request.json();
     

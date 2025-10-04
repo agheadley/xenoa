@@ -4,17 +4,17 @@ import { Resend } from 'resend';
 
 
 
-
-
-/* req.type is_staff or is_admin */
+/**
+ * Send email
+ * req.html string
+ * req.to string
+ * req.cc string[]
+ * req.subject string
+ * @returns {{isOK:boolean,msg:{}|string}}
+ */
 
 export async function POST({request}) {
     const req = await request.json();
-
-   
-   
-
-
 
     const resend = new Resend(RESEND_KEY);
 

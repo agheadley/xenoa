@@ -50,6 +50,15 @@ $effect(() => {
 
 onMount(async() => {
    console.log('requests',requests);
+
+    const response = await fetch('/private/api/admins', {
+        method: 'POST',
+        body: JSON.stringify({}),
+        headers: {'content-type': 'application/json'}
+    });
+    const res= await response.json();
+    
+	console.log(res);
    
 });
 
@@ -63,7 +72,27 @@ onMount(async() => {
 
 
 {#if account.isStaff}
- Staff section
+ <div class="row">
+     <div class="col-3">
+        <NewJob config={config} account={account} supabase={supabase} profiles={profiles.filter(el=>el.is_approved && !el.is_staff && !el.is_admin)} bind:isUpdate></NewJob>
+     </div>
+    
+    <div class="col-5">
+      <select name="sort" id='sort' bind:value={sortIndex} onchange={sortOrders}>
+        {#each sortList as row,rowIndex}
+        <option value={rowIndex}>Sort by {row}</option>
+        {/each}
+        </select>
+    </div>
+
+    <div class="col-4">
+        <div class="tabs">
+            {#each menu.list as item,index}
+                <a href={'javascript:void(0)'} onclick={()=>menu.index=index} class={index===menu.index ? 'active' : ''}>{item}</a>
+            {/each}
+        </div>
+    </div>
+</div>
 {/if}
 
 
@@ -86,6 +115,56 @@ onMount(async() => {
 </div>
 {/if}
 
+
+<p>&nbsp</p>
+{#each requests as row,rowIndex}
+    {#if (menu.list[menu.index]==='Me' && account.email===row.staff_email) ||  (account.isStaff && menu.list[menu.index]==='All') || (!account.isStaff)}
+    
+   
+    <div class="card">
+        <div class="row">
+            <div class="col">
+                {row.first_name} {row.last_name}
+            </div>
+            <div class="col">
+                {toSimpleDate(row.created_at)}
+            </div>
+        </div>
+         <div class="row">
+            <div class="col">
+                <a href={`/private/requests/${row.id}`}>{@html icon.edit()}{row.type}</a>
+            </div>
+            <div class="col">
+                {row.customer_ref}
+            </div>
+        </div>
+        <div class="row">
+            <div class="col">
+                {#if account.isAdmin}
+                {#if row.staff_id!=='' && row.staff_email!==''}
+                    <span class="tag is-small">{row.staff_email}</span>
+                {:else}
+                    <!--<AssignRequest request={row} account={account} supabase={supabase} profiles={profiles.filter(el=>el.is_staff)} bind:isUpdate></AssignRequest>-->
+                {/if}
+                {:else}
+                {#if row.staff_id!=='' && row.staff_email!==''}
+                    <span class="tag is-small">{row.staff_email}</span>
+                {:else}
+                    <span class="tag is-small text-error">AWAITING STAFF...</span> 
+                {/if}
+                {/if}
+            </div>
+            <div class="col">
+                <!--<Progress levels={row.levels} cfg={config.actions}></Progress>-->
+            </div>
+        </div>
+        
+    </div>
+<p></p>
+
+{/if}
+
+{/each}
 
 
 

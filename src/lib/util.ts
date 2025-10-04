@@ -26,9 +26,8 @@ export const getStagedFileName=(filename:string,stage:string|null,order_id:numbe
 
 
 
-
 export const email=async(to:string,subject:string,html:string,cc:string[]=[]):Promise<{isOK:boolean,msg:string}>=>{
-    const response = await fetch('/private/api/email/general', {
+    const response = await fetch('/private/api/email', {
         method: 'POST',
         body: JSON.stringify({to:to,html:html,subject:subject,cc:cc}),
         headers: {'content-type': 'application/json'}
@@ -37,7 +36,6 @@ export const email=async(to:string,subject:string,html:string,cc:string[]=[]):Pr
     
     return res.error===null ? {isOK:true,msg:'email sent'} : {isOK:true,msg:res.error};
 };
-
 
 export const log=async(user_id:string,user_email:string,table_name:string,log:string):Promise<{isOK:boolean,msg:string}>=>{
    const response = await fetch('/private/api/log', {
