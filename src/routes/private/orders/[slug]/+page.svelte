@@ -81,7 +81,7 @@ onMount(async() => {
     {#each job.transactions as row,rowIndex}
     <div class="msg">
         <div class="row">
-             <div class="col"><span class="">{row.log}</span></div>  
+             <div class="col"><span class="">{row.log==='file' ? row.file_name : row.log}</span></div>  
         </div>
         <div class="row">
             <div class="col"><span class="small">{toSimpleDate(row.created_at)}</span></div>
@@ -97,7 +97,9 @@ onMount(async() => {
 
 
 <div class="row">
-   
+     <div class="col">
+        {job.type} <i>{job.customer_ref}</i>
+     </div>
      <div class="col is-right">
         <button class="button primary icon" onclick={openMessages}>{@html icon.messageCircle()}&nbsp;Messages</button>
     </div>
