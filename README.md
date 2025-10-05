@@ -224,6 +224,7 @@ create table public.transactions (
     type text not null default format(''::text),
     log text not null default format(''::text),
     user_email text not null default format(''::text),
+    file_name text not null default format(''::text),
     is_new boolean default false,
     created_at timestamp with time zone DEFAULT now()
 );

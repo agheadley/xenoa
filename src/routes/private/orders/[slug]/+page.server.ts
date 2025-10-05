@@ -1,8 +1,7 @@
 import type { PageServerLoad } from './$types';
-import {processJob} from '$lib/job';
 
 export const load: PageServerLoad = async ({ depends,params,locals: { supabase}}) => {
-    depends('supabase:db:reqests');
+    depends('supabase:db:jobs');
 
     
   
@@ -24,7 +23,7 @@ export const load: PageServerLoad = async ({ depends,params,locals: { supabase}}
     const stages=config?.find(el=>el.type==='stages') ? config?.find(el=>el.type==='stages').data : [];
     
     //console.log(stages);
-    console.log(files);
+    //console.log(files);
     //const jobData=processJob(job, config.data, fileList ?? []);
 
 
@@ -36,11 +35,26 @@ export const load: PageServerLoad = async ({ depends,params,locals: { supabase}}
         files:{name:string,id:string,created_at:string}[]
     };
 
+
+    let job_data:Stage[]=[];
+
+    stages.forEach((item: { type: any; },i: any)=>{
+        let row={type:item.type,level:job.levels[i],files:[]};
+        console.log(item.type,i);
+        let fns=job.transactions.filter((el: { log: string; type: any; })=>el.log==='file' && item.type===el.type).map((el: { file_name: any; })=>el.file_name).toString();
+        let fileData=fileList?.filter(el=>fns.includes(el.name)).map(el=>({name:el.name,id:el.id,created_at:el.created_at}));
+        job_data.push({type:item.type,level:job.levels[i],files:fileData?.[0] ? fileData : []}); 
+    });
+
+    
+    //console.log(job_data);
+
     //console.log(new Date('2025-10-05T10:56:22.647Z').toLocaleString('en-GB', { day:"numeric",month: 'short',year:"numeric",hour:"2-digit",minute:"2-digit" }));
 
     return {
         job: job ?? {},
-        fileList: fileList ?? []
+        fileList: fileList ?? [],
+        job_data : job_data
         
 
         
