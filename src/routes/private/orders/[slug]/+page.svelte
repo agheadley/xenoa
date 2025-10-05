@@ -75,19 +75,35 @@ onMount(async() => {
 		<div class={row.level===2 ? 'title-box title-completed' : row.level===1 ? 'title-box title-progress' : 'title-box'}><div class="title">{row.type}</div></div>
 		<div class="content-wrapper">
 			<div class="content">
-			
-				<div>
-					{#each row.files as f,fIndex}
-						<p class="small">
-							 <a href={'javascript:void(0)'}  onclick={()=>download(f.name)}>{@html icon.download(10)} {f.name}</a>
-        
-						</p>
-					{/each}
-				</div>
+               
+                <div class="row">
+                    <div class="col">
+                         {#each row.files as f,fIndex}
+                         <div class="row">
+                            <div class="col">
+                                <button class="button clear">{@html icon.trash()}</button> &nbsp;&nbsp;
+                                <a href={'javascript:void(0)'}  onclick={()=>download(f.name)}>{@html icon.download()} {f.name}</a>
+                            </div>
+                             
+                         </div>
+                        {/each}
+                    </div>
+                    <div class="col">
+                        fwefwf
+                    </div>
+                </div>
+                       
+                   
+            
+                      
+                
+				
 			
 			
 			</div>
+          
 		</div>
+        
 		
 	</div>
 	<p></p>
@@ -135,7 +151,7 @@ onMount(async() => {
 	writing-mode: vertical-rl;
    text-orientation: mixed;
    text-transform:uppercase;
-   height:15rem;
+/*   height:15rem; */
    padding:1rem;
 	align-content: center;
 }
