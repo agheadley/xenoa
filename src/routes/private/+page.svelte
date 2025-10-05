@@ -9,6 +9,7 @@ import {email} from '$lib/util';
 import * as icon from '$lib/icon';
 
 import NewJob from './NewJob.svelte';
+import Progress from '$lib/Progress.svelte';
 
 let { data } = $props();
 let { account,profiles,supabase,config,requests} = $derived(data);
@@ -119,24 +120,25 @@ onMount(async() => {
                 {row.first_name} {row.last_name}
             </div>
             <div class="col">
-                {toSimpleDate(row.created_at)}
+                <span class="tag is-small">{toSimpleDate(row.created_at)}</span> <b>{row.customer_ref}</b>
             </div>
         </div>
          <div class="row">
             <div class="col">
-                <a href={`/private/orders/${row.id}`}>{@html icon.edit()}{row.type}</a>
+                <a href={`/private/orders/${row.id}`}>{@html icon.edit()} {row.type}</a>
             </div>
             <div class="col">
-                {row.customer_ref}
+                 <Progress levels={row.levels} cfg={config.actions}></Progress>
             </div>
         </div>
+		<!--
         <div class="row">
             <div class="col">
                 {#if account.isAdmin}
                 {#if row.staff_id!=='' && row.staff_email!==''}
                     <span class="tag is-small">{row.staff_email}</span>
                 {:else}
-                    <!--<AssignRequest request={row} account={account} supabase={supabase} profiles={profiles.filter(el=>el.is_staff)} bind:isUpdate></AssignRequest>-->
+                    <AssignRequest request={row} account={account} supabase={supabase} profiles={profiles.filter(el=>el.is_staff)} bind:isUpdate></AssignRequest>
                 {/if}
                 {:else}
                 {#if row.staff_id!=='' && row.staff_email!==''}
@@ -147,9 +149,10 @@ onMount(async() => {
                 {/if}
             </div>
             <div class="col">
-                <!--<Progress levels={row.levels} cfg={config.actions}></Progress>-->
+               
             </div>
         </div>
+		-->
         
     </div>
 <p></p>
