@@ -12,7 +12,7 @@ import NewJob from './NewJob.svelte';
 import Progress from '$lib/Progress.svelte';
 
 let { data } = $props();
-let { account,profiles,supabase,config,requests} = $derived(data);
+let { account,profiles,supabase,config,jobs} = $derived(data);
 
 let sortIndex=$state(1);
 let sortList=['Completion Least-Most','New to Old','Old to New'];
@@ -31,10 +31,10 @@ const sortOrders=()=>{
     //'Completion Least-Most','New to Old','Old to New'
 
     if(sortList[sortIndex]==='Completion Least-Most') 
-        requests = requests.sort((a,b)=>a.total-b.total|| (Number(new Date(a.created_at))-Number(new Date(b.created_at))));
+        jobs = jobs.sort((a,b)=>a.total-b.total|| (Number(new Date(a.created_at))-Number(new Date(b.created_at))));
     else if(sortList[sortIndex]==='Old to New') 
-        requests= requests.sort((a,b)=>Number(new Date(a.created_at))-Number(new Date(b.created_at)));
-    else requests= requests.sort((a,b)=>Number(new Date(b.created_at))-Number(new Date(a.created_at)));
+        jobs= jobs.sort((a,b)=>Number(new Date(a.created_at))-Number(new Date(b.created_at)));
+    else jobs= jobs.sort((a,b)=>Number(new Date(b.created_at))-Number(new Date(a.created_at)));
     
 };
 
@@ -42,8 +42,8 @@ const sortOrders=()=>{
 
 $effect(() => {
        if(isUpdate) {
-            console.log('updating requests...');
-            invalidate('supabase:db:requests');
+            console.log('updating jobs...');
+            invalidate('supabase:db:jobs');
             isUpdate=false;
        }
 });
@@ -110,7 +110,7 @@ onMount(async() => {
 
 
 <p>&nbsp</p>
-{#each requests as row,rowIndex}
+{#each jobs as row,rowIndex}
     {#if (menu.list[menu.index]==='Me' && account.email===row.staff_email) ||  (account.isStaff && menu.list[menu.index]==='All') || (!account.isStaff)}
     
    
@@ -128,7 +128,7 @@ onMount(async() => {
                 <a href={`/private/orders/${row.id}`}>{@html icon.edit()} {row.type}</a>
             </div>
             <div class="col">
-                 <Progress levels={row.levels} cfg={config.actions}></Progress>
+                 <Progress levels={row.levels} cfg={config.stages}></Progress>
             </div>
         </div>
 		<!--

@@ -3,6 +3,9 @@ import { invalidate ,goto} from '$app/navigation';
 import { onMount } from 'svelte';
 
 import * as icon from '$lib/icon';
+import {toSimpleDate} from '$lib/util';
+
+import Modal from '$lib/Modal.svelte';
 
 let { data } = $props();
 let { account,profiles,supabase,job,fileList,job_data} = $derived(data);
@@ -10,6 +13,7 @@ let { account,profiles,supabase,job,fileList,job_data} = $derived(data);
 let showModal : boolean = $state(true);
 let isUpdate : boolean  = $state(false);
 
+let isMessage : boolean = $state(false);
 
 const download=async(fn:string)=>{
     let t=Date.now();
@@ -33,6 +37,11 @@ const download=async(fn:string)=>{
 	}
 };
 
+const openMessages=()=>{
+    isMessage=true;
+    showModal=true;
+};
+
 $effect(() => {
      if(isUpdate) {
 		isUpdate=false;
@@ -42,8 +51,7 @@ $effect(() => {
 
 
 onMount(async() => {
-  console.log(job_data);
-   
+    console.log(job);
    
 });
 
@@ -63,10 +71,35 @@ onMount(async() => {
 	<meta name="description" content="Implantify" />
 </svelte:head>
 
+
+{#if isMessage && showModal}
+    <Modal bind:showModal>
+    {#snippet header()}
+    <h3>{job.customer_ref}</h3>
+    {/snippet} 
+
+    {#each job.transactions as row,rowIndex}
+    <div class="msg">
+        <div class="row">
+             <div class="col"><span class="">{row.log}</span></div>  
+        </div>
+        <div class="row">
+            <div class="col"><span class="small">{toSimpleDate(row.created_at)}</span></div>
+            <div class="col"><span class="small">{row.user_email}</span></div>    
+        </div>
+    </div>    
+    {/each}
+
+    </Modal>
+
+{/if}
+
+
+
 <div class="row">
    
      <div class="col is-right">
-        <button class="button primary icon">{@html icon.messageCircle()}&nbsp;Messages</button>
+        <button class="button primary icon" onclick={openMessages}>{@html icon.messageCircle()}&nbsp;Messages</button>
     </div>
 </div> 	
 
@@ -79,17 +112,56 @@ onMount(async() => {
                 <div class="row">
                     <div class="col">
                          {#each row.files as f,fIndex}
-                         <div class="row">
-                            <div class="col">
-                                <button class="button clear">{@html icon.trash()}</button> &nbsp;&nbsp;
+                                <a href={'javascript:void(0)'}>{@html icon.trash()}</a>&nbsp;&nbsp;&nbsp;
                                 <a href={'javascript:void(0)'}  onclick={()=>download(f.name)}>{@html icon.download()} {f.name}</a>
-                            </div>
-                             
-                         </div>
+                          <br/>
                         {/each}
                     </div>
                     <div class="col">
-                        fwefwf
+                        {#if row.type==='prescription'}
+
+                            {#if job.levels[rowIndex]===0}
+                                 <a href={'javascript:void(0)'}><span class="strong">{@html icon.edit()}&nbsp;EDIT</span></a>
+                            {/if}
+                            {#if job.levels[rowIndex]===1}
+                                 <a href={'javascript:void(0)'}><span class="strong">{@html icon.checkCircle()}&nbsp;APPROVE</span></a>
+                            {/if}
+                            
+                            {#if job.levels[rowIndex]===2}
+                                $nbsp;
+                            {/if}
+                        
+
+
+                            
+                        {:else if row.type==='manufacture'}
+                            
+                            {#if job.levels[rowIndex]===0}
+                                <a href={'javascript:void(0)'}><span class="strong">{@html icon.play()}PRODUCTION</span></a>
+                            {/if}
+                            {#if job.levels[rowIndex]===1}
+                                 <a href={'javascript:void(0)'}><span class="strong">{@html icon.truck()}&nbsp;SHIP</span></a>
+                            {/if}
+                            
+                            {#if job.levels[rowIndex]===2}
+                                &nbsp;
+                            {/if}
+                            
+                             
+                        {:else}
+                            {#if job.levels[rowIndex]===0}
+                                <a href={'javascript:void(0)'}><span class="strong">{@html icon.upload()}&nbsp;UPLOAD</span></a>
+                            {/if}
+                            {#if job.levels[rowIndex]===1}
+                                <a href={'javascript:void(0)'}><span class="strong">{@html icon.upload()}&nbsp;UPLOAD</span></a>&nbsp;
+                                <a href={'javascript:void(0)'}><span class="strong">{@html icon.checkCircle()}&nbsp;APPROVE</span></a>
+                            {/if}
+                            {#if job.levels[rowIndex]===2}
+                                <a href={'javascript:void(0)'}><span class="strong">{@html icon.upload()}&nbsp;UPLOAD</span></a>
+                            {/if}
+                             
+                        {/if}
+                       
                     </div>
                 </div>
                        
@@ -119,6 +191,22 @@ onMount(async() => {
 
 <style>
 
+.msg {
+     padding: 0.5rem 0.5rem;
+     margin-bottom:1rem;
+     border:1px solid var(--color-lightGrey);
+     border-radius: 4px;
+   
+}
+
+.strong {
+    font-weight:500;
+}
+
+.small {
+    padding: 0.4rem;
+    font-size: 1rem;
+}
 
 .wrapper {
 	display:flex;
@@ -175,24 +263,7 @@ onMount(async() => {
 	justify-content: space-between;
 }
 
-.latest {
-	max-height:5rem;
-	overflow:hidden;
-	font-size:1rem;
-}
 
-.small {
-	font-size:1rem;
-}
-
-
-.strong {
-	font-weight:500;
-}
-
-.upper {
-	text-transform: uppercase;
-}
 
 
 

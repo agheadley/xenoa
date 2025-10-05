@@ -13,6 +13,8 @@ export const load: PageServerLoad = async ({ depends,params,locals: { supabase}}
       sortBy: { column: 'name', order: 'asc' },
     });
 
+    job.transactions = job.transactions.sort((a: { created_at: string | number | Date; }, b: { created_at: string | number | Date; }) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
+
     let files = fileList ? 
         fileList.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
         .map(el=>({name:el.name,id:el.id,created_at:el.created_at}))

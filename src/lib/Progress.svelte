@@ -17,7 +17,7 @@ console.log(cfg);
 <div class="wrapper">
 {#each levels as item,index}
     <div class="small item">
-        <div class="text">{cfg[index].action}</div>
+        <div class="text">{cfg[index].type}</div>
         <div class="diagram">
             <svg width="5rem" height="2.5rem"  viewBox="0 0 200 100 " xmlns="http://www.w3.org/2000/svg">
             <line x1="0" y1="50" x2="200" y2="50" stroke="#5b6160" stroke-width="2"/>
