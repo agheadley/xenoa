@@ -213,8 +213,67 @@ WITH CHECK (public.is_staff_user(auth.uid()) or auth.uid() = customer_id);
 ```
 
 
+# transactions
+
+```
+
+create table public.transactions (
+    id int primary key generated always as identity,
+    job_id int not null references public.jobs(id) on delete cascade,
+    customer_id uuid not null,
+    type text not null default format(''::text),
+    log text not null default format(''::text),
+    user_email text not null default format(''::text),
+    is_new boolean default false,
+    created_at timestamp with time zone DEFAULT now()
+);
+
+alter table transactions enable row level security;
+
+CREATE POLICY "User ALL for own tansactions, staff ALL for all transactions"
+ON public.transactions
+FOR ALL
+TO authenticated
+USING (public.is_staff_user(auth.uid()) or auth.uid() = customer_id)
+WITH CHECK (public.is_staff_user(auth.uid()) or auth.uid() = customer_id);
+
+```
+
+# prescriptions
+
+```
+create table public.prescriptions(
+    id int primary key generated always as identity,
+    job_id int not null references public.jobs(id) on delete cascade,
+    customer_id uuid not null,
+    section text not null default format(''::text),
+    sort int not null default 0,
+    item text not null default format(''::text),
+    choice text not null default format(''::text),
+    denture jsonb not null default '{}'::jsonb,
+    created_at timestamp with time zone DEFAULT now()
+);
+
+alter table prescriptions enable row level security;
+
+CREATE POLICY "User ALL for own prescriptions, staff ALL for all prescritions"
+ON public.prescriptions
+FOR ALL
+TO authenticated
+USING (public.is_staff_user(auth.uid()) or auth.uid() = customer_id)
+WITH CHECK (public.is_staff_user(auth.uid()) or auth.uid() = customer_id);
+
+```
+
+# activity 
+
+
+
+
 
 Twillo Recovery Code, user agheadley@gmail.com
 ```
 ZB1WJZYV1XESKJNS8KYSB99V
 ```
+
+

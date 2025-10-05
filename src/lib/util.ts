@@ -26,10 +26,10 @@ export const getStagedFileName=(filename:string,stage:string|null,order_id:numbe
 
 
 
-export const email=async(to:string,subject:string,html:string,cc:string[]=[]):Promise<{isOK:boolean,msg:string}>=>{
+export const email=async(to:string|string[],subject:string,html:string):Promise<{isOK:boolean,msg:string}>=>{
     const response = await fetch('/private/api/email', {
         method: 'POST',
-        body: JSON.stringify({to:to,html:html,subject:subject,cc:cc}),
+        body: JSON.stringify({to:to,html:html,subject:subject}),
         headers: {'content-type': 'application/json'}
     });
     const res= await response.json();

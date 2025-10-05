@@ -49,16 +49,8 @@ $effect(() => {
 
 
 onMount(async() => {
-   console.log('requests',requests);
-
-    const response = await fetch('/private/api/admins', {
-        method: 'POST',
-        body: JSON.stringify({}),
-        headers: {'content-type': 'application/json'}
-    });
-    const res= await response.json();
-    
-	console.log(res);
+  console.log('private/+page.svelte ...');
+   
    
 });
 
@@ -132,7 +124,7 @@ onMount(async() => {
         </div>
          <div class="row">
             <div class="col">
-                <a href={`/private/requests/${row.id}`}>{@html icon.edit()}{row.type}</a>
+                <a href={`/private/orders/${row.id}`}>{@html icon.edit()}{row.type}</a>
             </div>
             <div class="col">
                 {row.customer_ref}

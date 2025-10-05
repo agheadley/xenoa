@@ -36,7 +36,7 @@ const updateDbStaff=async():Promise<{isOK:boolean,msg:string}>=>{
     const cc=profiles?.[0] ? profiles.filter((el: { is_admin: boolean; })=>el.is_admin===true).map((el: { email: any; })=>el.email) : [];
     
 
-    let res=await email(profiles[approveIndex].email, 'New Staff User', `<p>${profiles[approveIndex].email} is now a STAFF USER</p><p>Sign In at <a href="${PUBLIC_URL}">Implantify</a></p>`,cc);
+    let res=await email([profiles[approveIndex].email,...cc], 'New Staff User', `<p>${profiles[approveIndex].email} is now a STAFF USER</p><p>Sign In at <a href="${PUBLIC_URL}">Implantify</a></p>`);
     if(!res.isOK) return {isOK:false,msg:'user status staff ok,but error sending email'};
 
     let l=await log(account.id,account.email,'profiles',`User ${profiles[approveIndex].email} status changed to staff`)
@@ -65,7 +65,7 @@ const updateDbApprove=async():Promise<{isOK:boolean,msg:string}>=>{
 
     const cc=profiles?.[0] ? profiles.filter((el: { is_admin: boolean; })=>el.is_admin===true).map((el: { email: any; })=>el.email) : [];
   
-    let res=await email(profiles[approveIndex].email, 'Implantify User Approved', `<p>${profiles[approveIndex].email } is APPROVED as a user.</p><p>Sign In at <a href="${PUBLIC_URL}">Implantify</a></p>`,cc);
+    let res=await email([profiles[approveIndex].email,...cc], 'Implantify User Approved', `<p>${profiles[approveIndex].email } is APPROVED as a user.</p><p>Sign In at <a href="${PUBLIC_URL}">Implantify</a></p>`);
     if(!res.isOK) return {isOK:false,msg:'user approved,but error sending email'};
 
     let l=await log(account.id,account.email,'profiles',`User ${profiles[approveIndex].email} approved`)
