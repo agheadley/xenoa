@@ -52,7 +52,7 @@ $effect(() => {
 
 onMount(async() => {
     console.log(job);
-   
+    
 });
 
 

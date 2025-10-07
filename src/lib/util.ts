@@ -30,13 +30,14 @@ export const getStagedFileName=(filename:string,stage:string|null,order_id:numbe
 
 
 
-export const getAdminEmails=async():Promise<[string[]]>=>{
+export const getAdminEmails=async():Promise<string[]>=>{
       const response = await fetch('/private/api/admins', {
                 method: 'POST',
                 body: JSON.stringify({}),
                 headers: {'content-type': 'application/json'}
       });
       const cc= await response.json();
+      console.log(cc);
       return cc;
 };
 
@@ -70,4 +71,10 @@ export const log=async(user_id:string,user_email:string,table_name:string,log:st
         return false;
     } else return true;
     
+};
+
+export const getCustomers=(profiles:{id:string,first_name:string,last_name:string,email:string,institution:string,is_admin:boolean,is_staff:boolean,is_approved:boolean}[]):{id:string,first_name:string,last_name:string,email:string}[]=>{
+    const cs=profiles.filter(((el: { is_approved: any; is_staff: any; is_admin: any; })=>el.is_approved && !el.is_staff && !el.is_admin))
+        .map((el: { id: any; email: any; first_name: any; last_name: any; })=>({id:el.id,email:el.email,first_name:el.first_name,last_name:el.last_name}));
+    return cs;
 };

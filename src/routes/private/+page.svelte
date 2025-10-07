@@ -51,7 +51,8 @@ $effect(() => {
 
 onMount(async() => {
   console.log('private/+page.svelte ...');
-   
+  console.log('profiles',profiles);
+  
    
 });
 
@@ -67,7 +68,7 @@ onMount(async() => {
 {#if account.isStaff}
  <div class="row">
      <div class="col-3">
-        <NewJob config={config} account={account} supabase={supabase} profiles={profiles.filter(el=>el.is_approved && !el.is_staff && !el.is_admin)} bind:isUpdate></NewJob>
+        <NewJob config={config} account={account} supabase={supabase} profiles={profiles} bind:isUpdate></NewJob>
      </div>
     
     <div class="col-5">

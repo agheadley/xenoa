@@ -4,7 +4,7 @@ import { onMount } from 'svelte';
 import * as icon from '$lib/icon';
 import Modal from '$lib/Modal.svelte';
 import {alert} from '$lib/state.svelte';
-import {email,getAdminEmails} from '$lib/util';
+import {email,getAdminEmails,getCustomers} from '$lib/util';
 	
 let { isUpdate = $bindable(),supabase,config,account,profiles} = $props();
 
@@ -12,15 +12,19 @@ let job = $state({customer_id:'',type:'',first_name:'',last_name:'',customer_ref
 let customerIndex:number=$state(0);
 let showModal=$state(false);
 
+
+let customers:{id:string,email:string,first_name:string,last_name:string}[]=$state([]);
+
 const updateDb=async():Promise<{isOK:boolean,msg:string}>=>{
 
+    console.log(job);
     const { data:req,error:ereq } = await supabase.from('jobs').insert(job).select();
     
     console.log(req,ereq);
     if (ereq) return {isOK:false,msg:'error creating order'};
     //else console.log('job inserted',req);
 
-    let prescriptions=config.prescriptions.map((el: any)=>({...el,customer_id:job.customer_id,job_id:req?.[0].id}));
+    let prescriptions=config.prescriptions.map((el: any)=>({...el,customer_id:req?.[0].customer_id,job_id:req?.[0].id}));
     console.log(prescriptions);
     const { data:pres,error:epres } = await supabase.from('prescriptions').insert(prescriptions).select();
     console.log(pres,epres);
@@ -35,17 +39,22 @@ const createjob=async():Promise<void>=>{
 
     showModal=false;
 
+     console.log(customers[customerIndex]);
+
      if(account.isStaff || account.isAdmin) {   
-        job.customer_id=profiles[customerIndex].id;
-        job.customer_email=profiles[customerIndex].email;
-        job.first_name=profiles[customerIndex].first_name;
-        job.last_name=profiles[customerIndex].last_name;
+        job.customer_id=customers[customerIndex].id;
+        job.customer_email=customers[customerIndex].email;
+        job.first_name=customers[customerIndex].first_name;
+        job.last_name=customers[customerIndex].last_name;
     } else {
         job.customer_id=account.id;
         job.customer_email=account.email;
         job.first_name=account.first_name;
         job.last_name=account.last_name;
     }
+
+    console.log(job);
+
 
     let res =await updateDb();
     console.log(res);
@@ -57,17 +66,20 @@ const createjob=async():Promise<void>=>{
             <p>New order : ${job.type} ${job.customer_ref}</p><p>${job.first_name} ${job.last_name} (${job.customer_email})</p>`;
 
             const cc=await getAdminEmails();
-          
-            let res=await email([job.customer_email, ...cc], `New order, ${job.customer_ref} `, content);
+
+            console.log(job);
+            let to:string[]= [job.customer_email,...cc];
+            console.log(cc,to,job);
+            let res=await email(to, `New order, ${job.customer_ref} `, content);
 
            
-
+             //job = {customer_id:'',type:'',first_name:'',last_name:'',customer_ref:'',customer_email:''};
+             customerIndex=0;
+    
     }
 
     
-    job = {customer_id:'',type:'',first_name:'',last_name:'',customer_ref:'',customer_email:''};
-    customerIndex=0;
-    
+   
     alert.msg=res.msg;
     isUpdate=true;
    
@@ -77,18 +89,18 @@ const createjob=async():Promise<void>=>{
 
 
 $effect(() => {
-    if(!showModal) {
-        job = {customer_id:'',type:'',first_name:'',last_name:'',customer_ref:'',customer_email:''};
-        customerIndex=0;
-    }
+    
 });
 
 
 
 
 onMount(async() => {
-   
-    
+    customers=getCustomers(profiles);
+
+    console.log(profiles);
+
+    console.log(await getAdminEmails());
 });
 
 </script>
@@ -114,7 +126,7 @@ onMount(async() => {
   {#if account.isStaff || account.isAdmin}
   <label>Customer
   <select name="customer" bind:value={customerIndex}>
-     {#each profiles as profile,profileIndex}
+     {#each customers as profile,profileIndex}
      <option value={profileIndex}>{profile.last_name}, {profile.first_name} {profile.email} </option>
      {/each}
   </select>
