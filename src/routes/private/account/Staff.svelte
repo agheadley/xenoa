@@ -58,10 +58,7 @@ const updateStatus=async()=>{
         alert.msg='Admin status updated';
 
         let res=await log(account.id,account.email,'profiles',`${profiles[staffIndex].email} status change is_admin:${is_admin}`);
-        if(!res.isOK) {
-            alert.type='error';
-            alert.msg='admin status updated, but error logging change';
-        }
+       
 
     }
        

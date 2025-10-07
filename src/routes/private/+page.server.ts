@@ -1,7 +1,7 @@
 import type { PageServerLoad } from './$types';
 
 export const load: PageServerLoad = async ({ depends,params,locals: { supabase }}) => {
-    depends('supabase:db:requests');
+    depends('supabase:db:jobs');
 
     
     const { data: jobs} = await supabase.from('jobs').select('*').order('created_at',{ ascending: false });

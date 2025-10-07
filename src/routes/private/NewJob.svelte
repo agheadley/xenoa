@@ -4,7 +4,7 @@ import { onMount } from 'svelte';
 import * as icon from '$lib/icon';
 import Modal from '$lib/Modal.svelte';
 import {alert} from '$lib/state.svelte';
-import {email} from '$lib/util';
+import {email,getAdminEmails} from '$lib/util';
 	
 let { isUpdate = $bindable(),supabase,config,account,profiles} = $props();
 
@@ -32,6 +32,9 @@ const updateDb=async():Promise<{isOK:boolean,msg:string}>=>{
 };
 
 const createjob=async():Promise<void>=>{
+
+    showModal=false;
+
      if(account.isStaff || account.isAdmin) {   
         job.customer_id=profiles[customerIndex].id;
         job.customer_email=profiles[customerIndex].email;
@@ -51,34 +54,20 @@ const createjob=async():Promise<void>=>{
         alert.msg=res.msg;
     } else {
          const content =`
-            <p>New order : ${job.type} ${job.customer_ref}</p><p>${job.first_name} ${job.last_name} (${job.customer_email})</p>
-            <p>&nbsp;</p>
-            <p><a href="https://portal.implantify.eu">Sign in</a> to access this order</p>
-            `;
+            <p>New order : ${job.type} ${job.customer_ref}</p><p>${job.first_name} ${job.last_name} (${job.customer_email})</p>`;
 
-            const response = await fetch('/private/api/admins', {
-                method: 'POST',
-                body: JSON.stringify({}),
-                headers: {'content-type': 'application/json'}
-            });
-            const cc= await response.json();
-
+            const cc=await getAdminEmails();
           
-            let res=await email([job.customer_email,...cc],`New order, ${job.customer_ref} `,content);
+            let res=await email([job.customer_email, ...cc], `New order, ${job.customer_ref} `, content);
 
-            if(!res.isOK) {
-                 alert.type='error';
-                 alert.msg='order creatd. error emailing staff';
-            }
+           
 
     }
 
     
     job = {customer_id:'',type:'',first_name:'',last_name:'',customer_ref:'',customer_email:''};
     customerIndex=0;
-    showModal=false;
-
-   
+    
     alert.msg=res.msg;
     isUpdate=true;
    

@@ -5,7 +5,7 @@ import { invalidate } from '$app/navigation'
 import {toSimpleDate} from '$lib/util';
 import Modal from '$lib/Modal.svelte';
 import {alert} from '$lib/state.svelte';
-import {email} from '$lib/util';
+
 import * as icon from '$lib/icon';
 
 import NewJob from './NewJob.svelte';

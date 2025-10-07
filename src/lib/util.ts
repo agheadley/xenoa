@@ -26,25 +26,48 @@ export const getStagedFileName=(filename:string,stage:string|null,order_id:numbe
 
 
 
-export const email=async(to:string|string[],subject:string,html:string):Promise<{isOK:boolean,msg:string}>=>{
+
+
+
+
+export const getAdminEmails=async():Promise<[string[]]>=>{
+      const response = await fetch('/private/api/admins', {
+                method: 'POST',
+                body: JSON.stringify({}),
+                headers: {'content-type': 'application/json'}
+      });
+      const cc= await response.json();
+      return cc;
+};
+
+export const email=async(to:string[],subject:string,html:string):Promise<boolean>=>{
+
     const response = await fetch('/private/api/email', {
         method: 'POST',
         body: JSON.stringify({to:to,html:html,subject:subject}),
         headers: {'content-type': 'application/json'}
     });
     const res= await response.json();
+
+    if(res.error) {
+        console.log('error sending email',res.error);
+        return false;
+    } else return true;
     
-    return res.error===null ? {isOK:true,msg:'email sent'} : {isOK:true,msg:res.error};
+   
 };
 
-export const log=async(user_id:string,user_email:string,table_name:string,log:string):Promise<{isOK:boolean,msg:string}>=>{
+
+export const log=async(user_id:string,user_email:string,table_name:string,log:string):Promise<boolean>=>{
    const response = await fetch('/private/api/log', {
         method: 'POST',
         body: JSON.stringify({data:{user_id:user_id,user_email:user_email,table_name:table_name,log:log}}),
         headers: {'content-type': 'application/json'}
     });
     const res= await response.json();
-    //console.log('log res',res);
-    return {isOK:res.isOK,msg:res.msg};
+    if(res.error) {
+        console.log('error inserting log',res.error);
+        return false;
+    } else return true;
     
 };
