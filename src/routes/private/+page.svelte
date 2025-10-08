@@ -51,7 +51,7 @@ $effect(() => {
 
 onMount(async() => {
   console.log('private/+page.svelte ...');
-  console.log('profiles',profiles);
+  //console.log('profiles',profiles);
   
    
 });

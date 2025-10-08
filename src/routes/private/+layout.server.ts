@@ -16,7 +16,7 @@ export const load: LayoutServerLoad = async ({ locals: { safeGetSession ,supabas
   const account = {isStaff:false,isAdmin:false,first_name:'',last_name:'',email:user?.email,id:user?.id};
   //console.log({account});
   const { data : profiles} = await supabase.from('profiles').select();
-  console.log('+layout.server.ts profiles',profiles);
+  //console.log('+layout.server.ts profiles',profiles);
   
   const f=profiles?.find((el: { id: any; })=>el.id===user?.id)
   if(f) {

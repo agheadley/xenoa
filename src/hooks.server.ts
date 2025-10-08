@@ -78,20 +78,6 @@ const authGuard: Handle = async ({ event, resolve }) => {
   /* store the config data in event.locals, so that +page.server.ts files can access it from the load function */
   
   
-  /*
-  let { data : cfg} = await event.locals.supabase.from('config').select();
-  cfg = cfg?.[0] ? cfg : [];
-  let cfgx:any={};
-  for(let item of cfg) {
-    cfgx[item.type]=item.data;
-  }
-
-  console.log(event.locals);
-  event.locals.cfg=cfgx;
-  //console.log(cfgx);
-
-  */
-  /* / end of config data */
   
   //console.log('hooks.server.ts');
 

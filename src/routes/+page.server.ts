@@ -59,7 +59,7 @@ export const actions: Actions = {
     
     const next= urlParams.get('next') as string;
 
-    console.log('reset password',CALLBACK_URL);
+    //console.log('reset password',CALLBACK_URL);
     const { data, error } = await supabase.auth.resetPasswordForEmail(email, {
       redirectTo: `${CALLBACK_URL}?next=${next}`//`${CALLBACK_URL}?next=/private/account`,
 
@@ -70,7 +70,7 @@ export const actions: Actions = {
       //console.error(error)
       redirect(303, '/auth/error')
     } else {
-      console.log(data)
+      //console.log(data);
       redirect(303, '/auth/link')
     }
   },

@@ -51,7 +51,7 @@ $effect(() => {
 
 
 onMount(async() => {
-    console.log(job);
+    //console.log(job);
     
 });
 
@@ -112,18 +112,12 @@ onMount(async() => {
 			<div class="content">
                
                 <div class="row">
-                    <div class="col">
-                         {#each row.files as f,fIndex}
-                                <a href={'javascript:void(0)'}>{@html icon.trash()}</a>&nbsp;&nbsp;&nbsp;
-                                <a href={'javascript:void(0)'}  onclick={()=>download(f.name)}>{@html icon.download()} {f.name}</a>
-                          <br/>
-                        {/each}
-                    </div>
+                  
                     <div class="col">
                         {#if row.type==='prescription'}
 
                             {#if job.levels[rowIndex]===0}
-                                 <a href={'javascript:void(0)'}><span class="strong">{@html icon.edit()}&nbsp;EDIT</span></a>
+                                 <a href={`/private/prescriptions/${job.id}`}><span class="strong">{@html icon.edit()}&nbsp;EDIT</span></a>
                             {/if}
                             {#if job.levels[rowIndex]===1}
                                  <a href={'javascript:void(0)'}><span class="strong">{@html icon.checkCircle()}&nbsp;APPROVE</span></a>
@@ -164,6 +158,13 @@ onMount(async() => {
                              
                         {/if}
                        
+                    </div>
+                      <div class="col">
+                         {#each row.files as f,fIndex}
+                                <a href={'javascript:void(0)'}>{@html icon.trash()}</a>&nbsp;&nbsp;&nbsp;
+                                <a href={'javascript:void(0)'}  onclick={()=>download(f.name)}>{@html icon.download()} {f.name}</a>
+                          <br/>
+                        {/each}
                     </div>
                 </div>
                        

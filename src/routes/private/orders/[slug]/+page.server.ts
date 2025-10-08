@@ -42,7 +42,7 @@ export const load: PageServerLoad = async ({ depends,params,locals: { supabase}}
 
     stages.forEach((item: { type: any; },i: any)=>{
         let row={type:item.type,level:job.levels[i],files:[]};
-        console.log(item.type,i);
+        //console.log(item.type,i);
         let fns=job.transactions.filter((el: { log: string; type: any; })=>el.log==='file' && item.type===el.type).map((el: { file_name: any; })=>el.file_name).toString();
         let fileData=fileList?.filter(el=>fns.includes(el.name)).map(el=>({name:el.name,id:el.id,created_at:el.created_at}));
         job_data.push({type:item.type,level:job.levels[i],files:fileData?.[0] ? fileData : []}); 
