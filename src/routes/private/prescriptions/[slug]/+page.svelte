@@ -4,6 +4,7 @@ import {capitalize} from '$lib/util';
 import Denture from '$lib/Denture.svelte';
 import {alert} from '$lib/state.svelte.js';
 import Modal from '$lib/Modal.svelte';
+//import Submit from './Submit.svelte';
 
 let { data } = $props();
 let { account,profiles,supabase,config,job} = $derived(data);
@@ -22,6 +23,13 @@ interface Prescription {
 let prescriptions:Prescription[]=$state([]);
 
 let showModal:boolean = $state(true);
+let isSubmit:boolean=$state(false);
+
+const lock=()=>{
+	isSubmit=true;
+	showModal=true;
+};
+
 
 const store=async(index:number)=>{
     console.log('store',prescriptions[index].item,prescriptions[index].id,prescriptions[index].choice);
@@ -51,7 +59,7 @@ onMount(async() => {
 
 </script>
 
-{#if showModal}
+{#if showModal && !isSubmit}
     <Modal bind:showModal>
     {#snippet header()}
     <h3>Patient Prescriptions</h3>
@@ -59,12 +67,25 @@ onMount(async() => {
 
 	<p>Prescriptions are <b>automatically saved</b> as you enter data.</p>
 	
-	<p>Use <button class="button primary">Lock & Create Final PDF</button> when you are ready to submit it as a PDF for the Implantify team.</p> 
+	<p>Use <button disabled class="button primary">Lock & Create Final PDF</button> when you are ready to submit it as a PDF for the Implantify team.</p> 
 	
 	<p><button class="button outline" onclick={()=>showModal=false}>Close</button></p>
 
     </Modal>
 
+{/if}
+
+
+
+{#if showModal && isSubmit}
+	<Modal bind:showModal>
+    {#snippet header()}
+    <h3>Lock & Create PDF</h3>
+    {/snippet} 
+
+	<p>Create a PDF when you have completed the prescription.</p>
+	<p><button class="button outline" onclick={()=>showModal=false}>Cancel</button></p>
+    </Modal>
 {/if}
 
 <div class="row">
@@ -77,7 +98,7 @@ onMount(async() => {
 
 <p>
 	<a href={`/private/orders/${job.id}`} class="button outline">Back</a>
-	<button class="button primary">Lock & Create Final PDF</button>
+	<button class="button primary"  onclick={lock}>Lock & Create Final PDF</button>
 </p>
 <div class="row">
     <div class="col">
@@ -172,7 +193,14 @@ onMount(async() => {
         {/each}
     </div>
 </div>
-<p><a href={`/private/orders/${job.id}`} class="button outline">Back</a></p>
+<p>
+	<a href={`/private/orders/${job.id}`} class="button outline">Back</a>
+	<button class="button primary" onclick={lock}>Lock & Create Final PDF</button>
+</p>
+
+
+
+
 <style>
 
 </style>
