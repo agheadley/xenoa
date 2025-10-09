@@ -51,7 +51,7 @@ $effect(() => {
 
 
 onMount(async() => {
-    //console.log(job);
+    console.log(job_data);
     
 });
 
@@ -113,7 +113,7 @@ onMount(async() => {
                
                 <div class="row">
                   
-                    <div class="col">
+                    <div class="col-3">
                         {#if row.type==='prescription'}
 
                             {#if job.levels[rowIndex]===0}
@@ -159,10 +159,10 @@ onMount(async() => {
                         {/if}
                        
                     </div>
-                      <div class="col">
+                      <div class="col-9">
                          {#each row.files as f,fIndex}
                                 <a href={'javascript:void(0)'}>{@html icon.trash()}</a>&nbsp;&nbsp;&nbsp;
-                                <a href={'javascript:void(0)'}  onclick={()=>download(f.name)}>{@html icon.download()} {f.name}</a>
+                                <a href={'javascript:void(0)'}  onclick={()=>download(f.name)}>{@html icon.download()} {f.name}</a> <span class="tag is small">{toSimpleDate(f.created_at)}</span>
                           <br/>
                         {/each}
                     </div>

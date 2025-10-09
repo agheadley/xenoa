@@ -1,10 +1,17 @@
 <script lang="ts">
 import { onMount } from 'svelte';
-import {capitalize} from '$lib/util';
+import {capitalize, email, getAdminEmails} from '$lib/util';
+import {toSimpleDate,getNewFileName} from '$lib/util';
 import Denture from '$lib/Denture.svelte';
 import {alert} from '$lib/state.svelte.js';
 import Modal from '$lib/Modal.svelte';
-//import Submit from './Submit.svelte';
+
+import { PDFDocument } from 'pdf-lib';
+import { PageSizes } from 'pdf-lib';
+import { rgb } from 'pdf-lib';
+	import { goto } from '$app/navigation';
+
+	
 
 let { data } = $props();
 let { account,profiles,supabase,config,job} = $derived(data);
@@ -24,8 +31,234 @@ let prescriptions:Prescription[]=$state([]);
 
 let showModal:boolean = $state(true);
 let isSubmit:boolean=$state(false);
+let lockText:string=$state("");
+
+
+
+export const makePrescription = async(teatments:Prescription[])=>{
+
+
+
+    const pdfDoc = await PDFDocument.create()
+
+    /* A4 as 595pt*842pt */
+   
+    const page1 = pdfDoc.insertPage(0, PageSizes.A4)
+    const page2 = pdfDoc.insertPage(1, PageSizes.A4)
+   
+    page1.drawText(`Prescription ${job.type} ${job.customer_ref} ${toSimpleDate(job.created_at)}  `,{size:12,x:20,y:800});
+    page1.drawLine({
+        start: { x: 20, y: 780 },
+        end: { x:560, y: 780 },
+        thickness: 1,
+        color: rgb(0.75, 0.2, 0.2),
+        opacity: 0.75,
+    });
+
+    page1.drawText('Surgeon',{size:14,x:20,y:750});
+
+    
+    prescriptions.filter(el=>el.section==='surgeon').forEach((item,index)=>{
+        page1.drawText(String(capitalize(item.item.replaceAll('_',' '))),{size:10,x:20,y:730-index*15});
+        page1.drawText(String(item.choice),{size:10,x:250,y:730-index*15});
+    });
+    
+
+
+    page1.drawText('Patient',{size:14,x:20,y:500});
+  
+     prescriptions.filter(el=>el.section==='patient' && !el.item.includes('notes')).forEach((item,index)=>{
+        page1.drawText(String(capitalize(item.item.replaceAll('_',' '))),{size:10,x:20,y:480-index*15});
+        page1.drawText(String(item.choice),{size:10,x:250,y:480-index*15});
+    });
+       let f=prescriptions.find(el=>el.item==='prescription_notes');
+       if(f) {
+        page1.drawText(String(capitalize(f.item.replaceAll('_',' '))),{size:10,x:20,y:380});
+        page1.drawText(String(f.choice) , {
+            x: 20,
+            y: 360,
+            size: 10,
+            maxWidth: 500,
+            wordBreaks: [" "],
+            lineHeight: 15,
+            color: rgb(0, 0, 0),
+        });
+    }
+ 
+
+
+
+
+    page2.drawText('Device',{size:14,x:20,y:800});
+
+    
+    prescriptions.filter(el=>el.section==='device' && !el.item.includes('notes')).forEach((item,index)=>{
+        page2.drawText(String(capitalize(item.item.replaceAll('_',' '))),{size:10,x:20,y:780-index*15});
+        page2.drawText(String(item.choice),{size:10,x:250,y:780-index*15});
+    });
+    f=prescriptions.find(el=>el.item==='specification_notes');
+    if(f) {
+        page2.drawText(String(capitalize(f.item.replaceAll('_',' '))),{size:10,x:20,y:620});
+        page2.drawText(String(f.choice) , {
+            x: 20,
+            y: 600,
+            size: 10,
+            maxWidth: 500,
+            wordBreaks: [" "],
+            lineHeight: 15,
+            color: rgb(0, 0, 0),
+        });
+    }
+   
+        
+   
+
+   
+
+
+
+   
+
+    
+
+    page2.drawText('Denture',{size:14,x:20,y:420});
+
+ 
+    prescriptions.filter(el=>el.section==='denture' && el.item!=='denture' && el.item!=='denture_notes').forEach((item,index)=>{
+        page2.drawText(String(capitalize(item.item.replaceAll('_',' '))),{size:10,x:20,y:400-index*15});
+        page2.drawText(String(item?.choice) ? String(item.choice) : '',{size:10,x:250,y:400-index*15});
+    });
+
+    f=prescriptions.find(el=>el.item==='denture_notes');
+    if(f) {
+       
+        page2.drawText(String(capitalize(f.item.replaceAll('_',' '))),{size:10,x:20,y:310});
+        page2.drawText(String(f.choice) ? String(f.choice) : '', {
+            x: 20,
+            y: 290,
+            size: 10,
+            maxWidth: 500,
+            wordBreaks: [" "],
+            lineHeight: 15,
+            color: rgb(0, 0, 0),
+      
+        });
+    }
+
+    let ur='';
+    let ul='';
+    let lr='';
+    let ll='';
+    f=prescriptions.find(el=>el.item==='denture');
+
+   
+    if(f) {
+        console.log(f.denture);
+        ur=f.denture.filter(el=>el.q==='ur' && el.r).map(el=>el.i).sort().toString().replaceAll(',','');
+        ul=f.denture.filter(el=>el.q==='ul' && el.r).map(el=>el.i).sort().toString().replaceAll(',','');
+        lr=f.denture.filter(el=>el.q==='lr' && el.r).map(el=>el.i).sort().toString().replaceAll(',','');
+        ll=f.denture.filter(el=>el.q==='ll' && el.r).map(el=>el.i).sort().toString().replaceAll(',','');
+        console.log('ur',ur);
+        console.log('ul',ul);
+        console.log('lr',lr);
+        console.log('ll',ll);
+    }
+
+
+
+    page2.drawText('Dentures Required',{size:10,x:20,y:100});
+      
+    page2.drawText(`UR ${ur}`,{size:10,x:20,y:80});
+    page2.drawText(`UL ${ul}`,{size:10,x:100,y:80});
+    page2.drawText(`LR ${lr}`,{size:10,x:20,y:65});
+    page2.drawText(`LL ${ll}`,{size:10,x:100,y:65});
+    page2.drawLine({
+        start: { x: 20, y: 75},
+        end: { x:150, y: 75 },
+        thickness: 1,
+        color: rgb(0, 0, 0),
+        opacity: 0.75,
+    });
+     page2.drawLine({
+        start: { x: 95, y: 90},
+        end: { x:95, y: 60 },
+        thickness: 1,
+        color: rgb(0, 0, 0),
+        opacity: 0.75,
+    });
+    
+
+    const pdfBytes = await pdfDoc.save()
+    console.log(pdfBytes);
+    const byteArray = new Uint8Array(pdfBytes);
+
+
+    //console.log(byteArray);
+
+    return byteArray;
+
+};
+
+
+const createPDF=async()=>{
+	const byteArray = await makePrescription(prescriptions);
+    console.log(byteArray);
+
+    console.log();
+    const fn=getNewFileName(`${lockText}.pdf`,job.id);
+    
+    const { data, error } = await supabase
+    .storage
+    .from('order-files')
+    .upload(`${job.customer_id}/${fn}`, byteArray, {
+        cacheControl: '3600',
+        upsert: false
+    });
+    if(error) {
+        console.log(error);
+        alert.type='error';
+        alert.msg='error creating prescription file';
+    } else {
+		let x={customer_id:job.customer_id,type:'prescription',log:'file',user_email:account.email,job_id:job.id,is_new:true,file_name:fn}
+        console.log(x);
+		
+		const { data:req,error:ereq } = await supabase.from('transactions').insert(x).select();
+		if(!ereq) {
+			 const content =`
+            <p>New prescription: ${job.type} ${job.customer_ref}</p>
+			<p>${job.first_name} ${job.last_name} (${job.customer_email})</p>
+			`;
+
+			let res=await email([job.customer_email, ... await getAdminEmails()],`New prescription, ${job.customer_ref}`,content)
+			if(!res) {
+				alert.type='error';
+				alert.msg='error sending email. otherwise OK';
+			} else {
+				goto(`/private/orders/${job.id}`);
+				let l=[...job.levels];
+				l[0]=1;
+				console.log(l,job.id);
+				const { data:djob,error:ejob } = await supabase.from('jobs').update({levels:l}).eq('id',job.id);
+				if(ejob) {
+						alert.type='error';
+						alert.msg='order status level not updated, otherwise OK';
+				}
+			}
+		} else {
+			alert.type='error';
+			alert.msg='precription created, transaction record not saved correctly';
+		}
+        lockText='';
+        showModal=false;
+        //isUpdate=true;
+    }
+
+
+};
+
 
 const lock=()=>{
+	lockText="";
 	isSubmit=true;
 	showModal=true;
 };
@@ -38,6 +271,11 @@ const store=async(index:number)=>{
         alert.type='error';
         alert.msg=`Error storing ${capitalize(prescriptions[index].item.replaceAll('_',' '))}`;
     }		
+};
+
+const validate=()=>{
+	lockText=lockText.replace(/[^a-zA-Z0-9-_]+$/g,'');
+	lockText = lockText.length>15 ? lockText.slice(0,15) : lockText;
 };
 
 
@@ -64,13 +302,9 @@ onMount(async() => {
     {#snippet header()}
     <h3>Patient Prescriptions</h3>
     {/snippet} 
-
-	<p>Prescriptions are <b>automatically saved</b> as you enter data.</p>
-	
+	<p>Prescriptions are <b>AUTOMATICALLY SAVED</b> as you enter data.</p>
 	<p>Use <button disabled class="button primary">Lock & Create Final PDF</button> when you are ready to submit it as a PDF for the Implantify team.</p> 
-	
 	<p><button class="button outline" onclick={()=>showModal=false}>Close</button></p>
-
     </Modal>
 
 {/if}
@@ -84,7 +318,14 @@ onMount(async() => {
     {/snippet} 
 
 	<p>Create a PDF when you have completed the prescription.</p>
-	<p><button class="button outline" onclick={()=>showModal=false}>Cancel</button></p>
+
+	<p>Enter file name (max 15 characters)</p>
+	<p><input type=text bind:value={lockText} oninput={validate}/></p>
+
+	<p>
+		<button class="button primary" disabled={lockText==''} onclick={createPDF}>Cancel</button>
+		<button class="button outline" onclick={()=>showModal=false}>Cancel</button>
+	</p>
     </Modal>
 {/if}
 
@@ -202,5 +443,8 @@ onMount(async() => {
 
 
 <style>
+.strong {
+    font-weight:500;
 
+}
 </style>

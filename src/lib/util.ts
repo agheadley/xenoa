@@ -16,11 +16,17 @@ export const getFileExtension=(filename:string):string=>{
     return filename.slice(filename.lastIndexOf('.') + 1);
 }
 
-export const getStagedFileName=(filename:string,stage:string|null,order_id:number):string=>{
+export const getFileName=(filename:string):string=>{
+    if (!filename.includes('.') || filename.endsWith('.')) return filename;
+    return filename.split('.')[0];
+}
+
+export const getNewFileName=(filename:string,order_id:number):string=>{
     const d=new Date();
     const ext=getFileExtension(filename);
-    return `${stage!==null ? stage:'xxx'}-${order_id}-${d.toISOString().split('T')[0].replaceAll('-','')}-${d.toLocaleTimeString("en-GB").replaceAll(':','')}${ext!=='' ? '.'+ext:''}`;
-    
+    const fn=getFileName(filename);
+    //return `${fn}-${order_id}-${d.toISOString().split('T')[0].replaceAll('-','')}-${d.toLocaleTimeString("en-GB").replaceAll(':','')}${ext!=='' ? '.'+ext:''}`;
+    return `${fn}.${ext}`;
 };
 
 
