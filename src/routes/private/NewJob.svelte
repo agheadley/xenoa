@@ -4,11 +4,14 @@ import { onMount } from 'svelte';
 import * as icon from '$lib/icon';
 import Modal from '$lib/Modal.svelte';
 import {alert} from '$lib/state.svelte';
-import {email,getAdminEmails,getCustomers} from '$lib/util';
+import {addTransaction,getCustomers} from '$lib/util';
 	
 let { isUpdate = $bindable(),supabase,config,account,profiles} = $props();
 
 let job = $state({customer_id:'',type:'',first_name:'',last_name:'',customer_ref:'',customer_email:''});
+
+let newId:number = $state(0);
+
 let customerIndex:number=$state(0);
 let showModal=$state(false);
 
@@ -20,9 +23,10 @@ const updateDb=async():Promise<{isOK:boolean,msg:string}>=>{
     console.log(job);
     const { data:req,error:ereq } = await supabase.from('jobs').insert(job).select();
     
+
     console.log(req,ereq);
     if (ereq) return {isOK:false,msg:'error creating order'};
-    //else console.log('job inserted',req);
+    newId = req?.[0]?.id ? req[0].id : 0;
 
     let prescriptions=config.prescriptions.map((el: any)=>({...el,customer_id:req?.[0].customer_id,job_id:req?.[0].id}));
     console.log(prescriptions);
@@ -62,25 +66,43 @@ const createjob=async():Promise<void>=>{
         alert.type='error';
         alert.msg=res.msg;
     } else {
-         const content =`
-            <p>New order : ${job.type} ${job.customer_ref}</p><p>${job.first_name} ${job.last_name} (${job.customer_email})</p>`;
 
-            const cc=await getAdminEmails();
+         interface Transaction {
+            id?:number,
+            job_id:number,
+            customer_id:string,
+            user_email:string,
+            created_at?:string,
+            file_name:string,
+            is_new:boolean,
+            type:string,
+            log:string
+        };
 
-            console.log(job);
-            let to:string[]= [job.customer_email,...cc];
-            console.log(cc,to,job);
-            let res=await email(to, `New order, ${job.customer_ref} `, content);
-
-           
-             //job = {customer_id:'',type:'',first_name:'',last_name:'',customer_ref:'',customer_email:''};
-             customerIndex=0;
+        
+        let x:Transaction={
+            job_id:newId,
+            customer_id:job.customer_id,
+            user_email:account.email,
+            file_name:'',
+            is_new:true,
+            type:'order',
+            log:'new order'
+        };
+         
+        
+        let res=await addTransaction(supabase,x,job.type,job.customer_email);
+       
+       
+       
+       
+        customerIndex=0;
     
     }
 
     
    
-    alert.msg=res.msg;
+
     isUpdate=true;
    
 

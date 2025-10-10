@@ -1,7 +1,7 @@
 <script lang="ts">
 import { invalidate ,goto} from '$app/navigation';
 import { onMount } from 'svelte';
-import {getAdminEmails,email} from '$lib/util';
+import {getAdminEmails,email,addTransaction} from '$lib/util';
 import * as icon from '$lib/icon';
 import {toSimpleDate} from '$lib/util';
 import {alert} from '$lib/state.svelte.js';
@@ -46,7 +46,40 @@ const openMessages=()=>{
 };
 
 let addMsg=async()=>{
-    const msg={job_id:job.id,customer_id:job.customer_id,user_email:account.email,file_name:'',is_new:true,type:'message',log:logText};
+    
+    	interface Transaction {
+			id?:number,
+			job_id:number,
+			customer_id:string,
+			user_email:string,
+			created_at?:string,
+			file_name:string,
+			is_new:boolean,
+			type:string,
+			log:string
+		};
+
+		let x:Transaction={
+			customer_id:job.customer_id,
+			type:'message',
+			log:logText,
+			user_email:String(account.email),
+			job_id:job.id,
+			is_new:true,
+			file_name:''
+		};
+
+        console.log(x);
+
+		let res=await addTransaction(supabase,x,job.type,job.customer_email);
+    
+
+        /*
+        const msg={job_id:job.id,customer_id:job.customer_id,user_email:account.email,file_name:'',is_new:true,type:'message',log:logText};
+    
+    
+    
+    
     const { data,error } = await supabase.from('transactions').insert(msg).select();
     if(!error) {
          const content =`
@@ -64,13 +97,18 @@ let addMsg=async()=>{
                  alert.type='error';
                  alert.msg='error - message saved, but email failed.';
             }
-            isMessage=false;
-            showModal=false;
-            isUpdate=true;
+          
     } else {
         alert.type='error';
         alert.msg='error - message not saved';
     }
+
+    */
+
+    logText='';
+    isMessage=false;
+    showModal=false;
+    isUpdate=true;
 };
 
 $effect(() => {

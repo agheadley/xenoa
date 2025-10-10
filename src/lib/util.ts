@@ -1,3 +1,5 @@
+import {alert} from '$lib/state.svelte'
+
 export const toSimpleDate=(dateString:string):string=>{
     return new Date(dateString).toLocaleString('en-GB', { day:"numeric",month: 'short',year:"numeric" });
 };
@@ -84,3 +86,35 @@ export const getCustomers=(profiles:{id:string,first_name:string,last_name:strin
         .map((el: { id: any; email: any; first_name: any; last_name: any; })=>({id:el.id,email:el.email,first_name:el.first_name,last_name:el.last_name}));
     return cs;
 };
+
+   interface Transaction {
+            id?:number,
+            job_id:number,
+            customer_id:string,
+            user_email:string,
+            created_at?:string,
+            file_name:string,
+            is_new:boolean,
+            type:string,
+            log:string
+        };
+
+export const addTransaction=async(supabase:any,transaction:Transaction,job_type:string,customer_email:string)=>{
+    // add transaction
+
+    let msg='';
+    const { data,error} = await supabase.from('transactions').insert(transaction).select();
+    
+    if(error) msg='error adding transaction ';
+
+    // send email
+    let to:string[]= [customer_email,...await getAdminEmails()];
+    let res=await email(to, `New Activity, ${job_type} `, `<p>Area : ${transaction.type}</p><p>Log : ${transaction.log}</p>`);
+    if(!res) msg+='error sending email';
+
+    if(msg!=='') {
+        alert.type='error';
+        alert.msg=msg;
+    }
+};
+

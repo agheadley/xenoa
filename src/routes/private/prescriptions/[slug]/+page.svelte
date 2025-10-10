@@ -1,6 +1,6 @@
 <script lang="ts">
 import { onMount } from 'svelte';
-import {capitalize, email, getAdminEmails} from '$lib/util';
+import {capitalize, email, getAdminEmails,addTransaction} from '$lib/util';
 import {toSimpleDate,getNewFileName} from '$lib/util';
 import Denture from '$lib/Denture.svelte';
 import {alert} from '$lib/state.svelte.js';
@@ -9,7 +9,7 @@ import Modal from '$lib/Modal.svelte';
 import { PDFDocument } from 'pdf-lib';
 import { PageSizes } from 'pdf-lib';
 import { rgb } from 'pdf-lib';
-	import { goto } from '$app/navigation';
+import { goto } from '$app/navigation';
 
 	
 
@@ -219,9 +219,34 @@ const createPDF=async()=>{
         alert.type='error';
         alert.msg='error creating prescription file';
     } else {
-		let x={customer_id:job.customer_id,type:'prescription',log:'file',user_email:account.email,job_id:job.id,is_new:true,file_name:fn}
+
+		interface Transaction {
+			id?:number,
+			job_id:number,
+			customer_id:string,
+			user_email:string,
+			created_at?:string,
+			file_name:string,
+			is_new:boolean,
+			type:string,
+			log:string
+		};
+
+		let x:Transaction={
+			customer_id:job.customer_id,
+			type:'prescription',
+			log:'file',
+			user_email:String(account.email),
+			job_id:job.id,
+			is_new:true,
+			file_name:fn
+		};
+
         console.log(x);
+
+		let res=await addTransaction(supabase,x,job.type,job.customer_email);
 		
+		/*
 		const { data:req,error:ereq } = await supabase.from('transactions').insert(x).select();
 		if(!ereq) {
 			 const content =`
@@ -248,9 +273,11 @@ const createPDF=async()=>{
 			alert.type='error';
 			alert.msg='precription created, transaction record not saved correctly';
 		}
-        lockText='';
+		*/
+        
+		lockText='';
         showModal=false;
-        //isUpdate=true;
+        
     }
 
 
