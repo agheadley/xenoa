@@ -43,7 +43,7 @@ export const getAdminEmails=async():Promise<string[]>=>{
                 headers: {'content-type': 'application/json'}
       });
       const cc= await response.json();
-      console.log(cc);
+      //console.log(cc);
       return cc;
 };
 

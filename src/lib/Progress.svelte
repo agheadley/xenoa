@@ -4,7 +4,7 @@
 
 let { cfg,levels} = $props();
 
-console.log(cfg);
+//console.log(cfg);
 
 </script>
 

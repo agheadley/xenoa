@@ -1,9 +1,10 @@
 <script lang="ts">
 import { invalidate ,goto} from '$app/navigation';
 import { onMount } from 'svelte';
-
+import {getAdminEmails,email} from '$lib/util';
 import * as icon from '$lib/icon';
 import {toSimpleDate} from '$lib/util';
+import {alert} from '$lib/state.svelte.js';
 
 import Modal from '$lib/Modal.svelte';
 
@@ -14,6 +15,8 @@ let showModal : boolean = $state(true);
 let isUpdate : boolean  = $state(false);
 
 let isMessage : boolean = $state(false);
+
+let logText:string=$state('');
 
 const download=async(fn:string)=>{
     let t=Date.now();
@@ -42,16 +45,60 @@ const openMessages=()=>{
     showModal=true;
 };
 
+let addMsg=async()=>{
+    const msg={job_id:job.id,customer_id:job.customer_id,user_email:account.email,file_name:'',is_new:true,type:'message',log:logText};
+    const { data,error } = await supabase.from('transactions').insert(msg).select();
+    if(!error) {
+         const content =`
+            <p>New message: ${job.type} ${job.customer_ref}</p><p>${job.first_name} ${job.last_name} (${job.customer_email})</p>
+            <p>${logText}</p>
+            `;
+
+            const cc=await getAdminEmails();
+            
+            console.log(job);
+            let to:string[]= [job.customer_email,...cc];
+            console.log(cc,to,job);
+            let res=await email(to, `New order, ${job.customer_ref} `, content);
+            if(!res) {
+                 alert.type='error';
+                 alert.msg='error - message saved, but email failed.';
+            }
+            isMessage=false;
+            showModal=false;
+            isUpdate=true;
+    } else {
+        alert.type='error';
+        alert.msg='error - message not saved';
+    }
+};
+
 $effect(() => {
      if(isUpdate) {
 		isUpdate=false;
-		invalidate('supabase:db:reqests');
+		invalidate('supabase:db:jobs');
 	 }
+
+     if(isMessage && !showModal) {
+        console.log('clear new activity ....');
+
+        (async () => {
+            const { data,error} = await supabase.from('transactions').update({is_new:false}).eq('job_id',job.id);
+            if(error) {
+                    alert.type='error';
+                    alert.msg='error - failed to update transactions';
+            }
+
+        })();
+
+    
+     }
 });
 
 
 onMount(async() => {
-    console.log(job_data);
+    console.log(job_data,job);
+    if(job.transactions.reduce((acc: number,curr: { is_new: any; })=>curr.is_new ? acc+1 : acc,0)>0) openMessages();
     
 });
 
@@ -75,9 +122,11 @@ onMount(async() => {
 {#if isMessage && showModal}
     <Modal bind:showModal>
     {#snippet header()}
-    <h3>{job.customer_ref}</h3>
+    <h3>Activity Log</h3>
     {/snippet} 
-
+    <p><textarea rows="4" bind:value={logText}></textarea></p>
+    <p><button class="button primary icon"onclick={addMsg}>{@html icon.send()}&nbsp;Send</button></p>
+    <div class="msg-wrapper">
     {#each job.transactions as row,rowIndex}
     <div class="msg">
         <div class="row">
@@ -89,6 +138,8 @@ onMount(async() => {
         </div>
     </div>    
     {/each}
+    </div>
+    <p><button class="button outline" onclick={()=>showModal=false}>Close</button></p>
 
     </Modal>
 
@@ -101,7 +152,7 @@ onMount(async() => {
         {job.type} <i>{job.customer_ref}</i>
      </div>
      <div class="col is-right">
-        <button class="button primary icon" onclick={openMessages}>{@html icon.messageCircle()}&nbsp;Messages</button>
+        <button class="button primary icon" onclick={openMessages}>{@html icon.messageCircle()}&nbsp;Activity Log</button>
     </div>
 </div> 	
 
@@ -200,6 +251,12 @@ onMount(async() => {
      border:1px solid var(--color-lightGrey);
      border-radius: 4px;
    
+}
+
+.msg-wrapper {
+    overflow-x:hidden;
+    overflow-y:auto;
+    max-height:60%;
 }
 
 .strong {

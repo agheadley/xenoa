@@ -10,6 +10,7 @@ import * as icon from '$lib/icon';
 
 import NewJob from './NewJob.svelte';
 import Progress from '$lib/Progress.svelte';
+	
 
 let { data } = $props();
 let { account,profiles,supabase,config,jobs} = $derived(data);
@@ -22,7 +23,10 @@ let isUpdate=$state(false);
 let assignIndex=$state(0);
 let staffId=$state('');
 
+let newActivity:{id:number,customer_email:string,customer_ref:string,activity:number,job_id:number,type:string}[]=$state([]);
+
 let showModal=$state(false);
+let isNew=$state(false);
 
 let menu = $state({list:['All','Me'],index:0});
 
@@ -46,13 +50,23 @@ $effect(() => {
             invalidate('supabase:db:jobs');
             isUpdate=false;
        }
+	   if(!showModal && isNew) {
+		console.log('new activity seen!!!');
+		isNew=false;
+	   }
 });
 
 
 onMount(async() => {
   console.log('private/+page.svelte ...');
-  //console.log('profiles',profiles);
-  
+  console.log(jobs);
+  newActivity=jobs.map(el=>({id:el.id,job_id:el.id,type:el.type,customer_ref:el.customer_ref,customer_email:el.customer_email,activity:el.transactions.reduce((acc:number,curr)=>curr.is_new ?acc+1 : acc,0 )}));
+  console.log(newActivity);
+
+  if(newActivity.reduce((acc,curr)=>acc+curr.activity,0)>0) {
+	showModal=true;
+	isNew=true;
+  }
    
 });
 
@@ -64,6 +78,24 @@ onMount(async() => {
 	<meta name="description" content="Implantify" />
 </svelte:head>
 
+{#if showModal && isNew}
+	<Modal bind:showModal>
+    {#snippet header()}
+    <h3>New Order Activity</h3>
+    {/snippet} 
+
+	{#each newActivity as row,rowIndex}
+		{#if row.activity>0}
+		<p><a href={`/private/orders/${row.id}`}>{@html icon.edit()} {row.type}</a> <i>{row.customer_ref}</i> {row.customer_email}</p>
+		{/if}
+	{/each}
+
+	<p><b>Edit orders to view</b></p>
+	<p>
+	<button class="button outline" onclick={()=>showModal=false}>Cancel</button>
+	</p>
+    </Modal>
+{/if}
 
 {#if account.isStaff}
  <div class="row">
@@ -168,5 +200,11 @@ onMount(async() => {
 
 <style>
 
+/*
+.small {
+    padding: 0.4rem;
+    font-size: 1rem;
+}
+	*/
 </style>
 

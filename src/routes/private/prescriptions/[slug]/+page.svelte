@@ -323,7 +323,7 @@ onMount(async() => {
 	<p><input type=text bind:value={lockText} oninput={validate}/></p>
 
 	<p>
-		<button class="button primary" disabled={lockText==''} onclick={createPDF}>Cancel</button>
+		<button class="button primary" disabled={lockText==''} onclick={createPDF}>Create PDF</button>
 		<button class="button outline" onclick={()=>showModal=false}>Cancel</button>
 	</p>
     </Modal>
@@ -443,8 +443,10 @@ onMount(async() => {
 
 
 <style>
+	/*
 .strong {
     font-weight:500;
 
 }
+	*/
 </style>

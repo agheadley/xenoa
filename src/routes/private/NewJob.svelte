@@ -98,9 +98,9 @@ $effect(() => {
 onMount(async() => {
     customers=getCustomers(profiles);
 
-    console.log(profiles);
+   //console.log(profiles);
 
-    console.log(await getAdminEmails());
+   //console.log(await getAdminEmails());
 });
 
 </script>

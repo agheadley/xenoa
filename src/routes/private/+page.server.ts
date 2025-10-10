@@ -4,14 +4,30 @@ export const load: PageServerLoad = async ({ depends,params,locals: { supabase }
     depends('supabase:db:jobs');
 
     
-    const { data: jobs} = await supabase.from('jobs').select('*').order('created_at',{ ascending: false });
+    const { data: jobs} = await supabase.from('jobs').select('*,transactions(*)').order('created_at',{ ascending: false });
     
     interface Transaction {
-        name:string
+        id:number,
+        job_id:number,
+        customer_id:string,
+        user_email:string,
+        created_at:string,
+        file_name:string,
+        is_new:boolean,
+        type:string,
+        log:string
     };
 
     interface Prescription {
-        name:string
+        id:number,
+        job_id:number,
+        customer_id:string,
+        created_at:string,
+        section:string,
+        item:string,
+        sort:number,
+        choice:string,
+        denture:{i:string,l:string,q:string,r:boolean}[]
     };
 
     interface Job {
@@ -33,7 +49,7 @@ export const load: PageServerLoad = async ({ depends,params,locals: { supabase }
     };
 
 
-    const jobData:Job[] = jobs?.[0] ? jobs.map(el=>({...el,transactions:[],prescriptions:[],total:el.levels.reduce((acc: number,curr:number)=>acc+curr,0)})) : [];
+    const jobData:Job[] = jobs?.[0] ? jobs.map(el=>({...el,prescriptions:[],total:el.levels.reduce((acc: number,curr:number)=>acc+curr,0)})) : [];
     
     return {
        jobs:jobData??[]
