@@ -205,7 +205,7 @@ const createPDF=async()=>{
     console.log(byteArray);
 
     console.log();
-    const fn=getNewFileName(`${lockText}.pdf`,job.id);
+    const fn=getNewFileName(`${lockText}_${job.id}.pdf`,job.id);
     
     const { data, error } = await supabase
     .storage

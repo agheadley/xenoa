@@ -136,17 +136,17 @@ const processTransaction=async()=>{
 	};
     let res=await addTransaction(supabase,x,job.type,job.customer_email);
     let l : 0|1|2 = 0;
+
+    console.log(transactionText);
+
     if(transactionText==='approve') {
         l =2 ;
     } else {
+         l =0;
          l = transactionText === 'ship' ? 2 : l;
-         l = transactionText === 'start' ? 2 : l;
+         l = transactionText === 'start' ? 1 : l;
          
     }
-
-     invalidate('supabase:db:jobs');
-
-   
 
     await updateLevel(supabase,config.stages,job.id,transactionType,l);
 
@@ -155,6 +155,8 @@ const processTransaction=async()=>{
     transactionComment='';
     isTransaction=false;
     showModal=false;
+    
+    invalidate('supabase:db:jobs');
 
 };
 
@@ -340,13 +342,41 @@ const populateUploadName=()=>{
     name=name.replace(/[^a-zA-Z0-9-_]/g,'');
     //name=name.replace(/ /g,'');
 	name = name.length>15 ? name.slice(0,15) : name;
-    uploadName=`${name}.${ext}`;
+    uploadName=`${name}_${job.id}.${ext}`;
     
 };
 
 const validate=()=>{
 	uploadName=uploadName.replace(/[^a-zA-Z0-9-_]+$/g,'');
 	uploadName = uploadName.length>15 ? uploadName.slice(0,15) : uploadName;
+};
+
+const reset=async(type:string)=>{
+    invalidate('supabase:db:jobs');
+    console.log('resetting...',type);
+
+    let f=job_data.find(el=>el.type===type);
+    
+    let l:0|1|2=0;
+    if(f && f?.files?.[0] && type!=='manufacture') l=1;
+
+    let x:Transaction={
+        customer_id:job.customer_id,
+        type:type,
+        log:`stage reset`,
+        user_email:String(account.email),
+        job_id:job.id,
+        is_new:true,
+        file_name:''
+    };
+
+    console.log(x);
+
+    let res=await addTransaction(supabase,x,type,job.customer_email);
+    await updateLevel(supabase,config.stages,job.id,type,l);
+
+    invalidate('supabase:db:jobs');
+
 };
 
 $effect(() => {
@@ -523,6 +553,9 @@ onMount(async() => {
                                  <a href={`/private/prescriptions/${job.id}`}><span class="strong">{@html icon.edit()}&nbsp;EDIT</span></a>
                                 <br/>
                                 <p class="strong">Completed</p>
+                                {#if account.isStaff}
+                                 <a href={'javascript:void(0)'} onclick={()=>reset(row.type)}><span class="strong">{@html icon.rotateCcw()}&nbsp;RESET</span></a>
+                                {/if}
                             {/if}
                         
 
@@ -539,6 +572,9 @@ onMount(async() => {
                             {/if}
                             {#if job.levels[rowIndex]===2}
                                 <p class="strong">Completed</p>
+                                   {#if account.isStaff}
+                                 <a href={'javascript:void(0)'} onclick={()=>reset(row.type)}><span class="strong">{@html icon.rotateCcw()}&nbsp;RESET</span></a>
+                                    {/if}
                             {/if}
                            
                             
@@ -564,8 +600,10 @@ onMount(async() => {
                                 <a href={'javascript:void(0)'} onclick={()=>openUpload(row.type)}><span class="strong">{@html icon.upload()}&nbsp;UPLOAD</span></a>
                                 <br/>
                                 <p class="strong">Completed</p>
-                                <a href={'javascript:void(0)'}>{@html icon.rotateCcw()}&nbsp;RESET</a>
-                            {/if}
+                                   {#if account.isStaff}
+                                <a href={'javascript:void(0)'} onclick={()=>reset(row.type)}><span class="strong">{@html icon.rotateCcw()}&nbsp;RESET</span></a>
+                                    {/if}
+                                {/if}
                              
                         {/if}
                        
