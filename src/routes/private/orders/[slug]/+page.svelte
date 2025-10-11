@@ -81,7 +81,7 @@ const removeFile=async()=>{
          	let x:Transaction={
 			customer_id:job.customer_id,
 			type:deleteType,
-			log:'delete file',
+			log:`deleted file ${deleteName}`,
 			user_email:String(account.email),
 			job_id:job.id,
 			is_new:true,
