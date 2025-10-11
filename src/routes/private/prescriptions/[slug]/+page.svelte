@@ -250,6 +250,7 @@ const createPDF=async()=>{
        
 		lockText='';
         showModal=false;
+        goto(`/private/orders/${job.id}`);
         
     }
 

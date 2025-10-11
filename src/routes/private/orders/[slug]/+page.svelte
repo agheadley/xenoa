@@ -14,6 +14,7 @@ let { account,profiles,supabase,job,fileList,job_data,config} = $derived(data);
 let showModal : boolean = $state(true);
 let isUpdate : boolean  = $state(false);
 
+
 let isMessage : boolean = $state(false);
 let isDelete : boolean = $state(false);
 let deleteType : string = $state('');
@@ -21,6 +22,11 @@ let deleteName : string=$state('');
 
 let logText:string=$state('');
 let deleteText:string=$state('');
+
+let isTransaction : boolean = $state(false);
+let transactionType:string = $state('');
+let transactionText:string = $state('');
+let transactionComment:string = $state('');
 
 interface Transaction {
 			id?:number,
@@ -60,13 +66,65 @@ const download=async(fn:string)=>{
 const openDelete=(fileName:string,type:string)=>{
     deleteName=fileName;
     deleteType=type;
+
+    isTransaction=false;
+    isMessage=false;
+
     isDelete=true;
     showModal=true;
 };
 
 const openMessages=()=>{
+    isDelete=false;
+    isTransaction=false;
     isMessage=true;
     showModal=true;
+};
+
+const openTransaction=(type:string,text:string)=>{
+    transactionType=type;
+    transactionText=text;
+    transactionComment='';
+
+    isMessage=false;
+    isDelete=false;
+    isTransaction=true;
+
+    showModal=true;
+};
+
+const processTransaction=async()=>{
+    let x:Transaction={
+			customer_id:job.customer_id,
+			type:transactionType,
+			log:`${transactionText} - ${transactionComment}`,
+			user_email:String(account.email),
+			job_id:job.id,
+			is_new:true,
+			file_name:''
+	};
+    let res=await addTransaction(supabase,x,job.type,job.customer_email);
+    let l : 0|1|2 = 0;
+    if(transactionText==='approve') {
+        l =2 ;
+    } else {
+         l = transactionText === 'ship' ? 2 : l;
+         l = transactionText === 'start' ? 2 : l;
+         
+    }
+
+     invalidate('supabase:db:jobs');
+
+   
+
+    await updateLevel(supabase,config.stages,job.id,transactionType,l);
+
+    transactionType='';
+    transactionText='';
+    transactionComment='';
+    isTransaction=false;
+    showModal=false;
+
 };
 
 const removeFile=async()=>{
@@ -190,7 +248,22 @@ onMount(async() => {
 	<meta name="description" content="Implantify" />
 </svelte:head>
 
+{#if isTransaction && showModal}
+   <Modal bind:showModal>
+  {#snippet header()}
+  <h3><span class="text-capitalize">{transactionText} {transactionType}</span></h3>
+  {/snippet}
+  <p>Add a message if required e.g. tracking code for shipping or comment.</p>
+ 
+    <p><textarea rows="4" bind:value={transactionComment}></textarea></p>
+<p>
+     <button class="button primary" onclick={processTransaction}><span class="text-capitalize">{transactionText}</span></button>
+     <button class="button outline" onclick={()=>showModal=false}>Cancel</button>
+</p>
 
+
+</Modal>
+{/if}
 
 
 {#if isDelete && showModal}
@@ -268,28 +341,35 @@ onMount(async() => {
                                  <a href={`/private/prescriptions/${job.id}`}><span class="strong">{@html icon.edit()}&nbsp;EDIT</span></a>
                             {/if}
                             {#if job.levels[rowIndex]===1}
-                                 <a href={'javascript:void(0)'}><span class="strong">{@html icon.checkCircle()}&nbsp;APPROVE</span></a>
+                                 <a href={`/private/prescriptions/${job.id}`}><span class="strong">{@html icon.edit()}&nbsp;EDIT</span></a>
+                                 {#if account.isStaff}
+                                 <br/>
+                                 <a href={'javascript:void(0)'} onclick={()=>openTransaction('prescription','approve')}><span class="strong">{@html icon.checkCircle()}&nbsp;APPROVE</span></a>
+                                {/if}
                             {/if}
                             
                             {#if job.levels[rowIndex]===2}
-                                $nbsp;
+                                 <a href={`/private/prescriptions/${job.id}`}><span class="strong">{@html icon.edit()}&nbsp;EDIT</span></a>
+                                <br/>
+                                <p class="strong">Completed</p>
                             {/if}
                         
 
 
                             
                         {:else if row.type==='manufacture'}
-                            
+                            {#if account.isStaff}
                             {#if job.levels[rowIndex]===0}
-                                <a href={'javascript:void(0)'}><span class="strong">{@html icon.play()}PRODUCE</span></a>
+                                <a href={'javascript:void(0)'} onclick={()=>openTransaction('manufacture','start')}><span class="strong">{@html icon.play()}START</span></a>
                             {/if}
                             {#if job.levels[rowIndex]===1}
-                                 <a href={'javascript:void(0)'}><span class="strong">{@html icon.truck()}&nbsp;SHIP</span></a>
+                                 <a href={'javascript:void(0)'} onclick={()=>openTransaction('manufacture','ship')}><span class="strong">{@html icon.truck()}&nbsp;SHIP</span></a>
                             {/if}
-                            
+                            {/if}
                             {#if job.levels[rowIndex]===2}
-                                &nbsp;
+                                <p class="strong">Completed</p>
                             {/if}
+                           
                             
                              
                         {:else}
@@ -297,11 +377,16 @@ onMount(async() => {
                                 <a href={'javascript:void(0)'}><span class="strong">{@html icon.upload()}&nbsp;UPLOAD</span></a>
                             {/if}
                             {#if job.levels[rowIndex]===1}
-                                <a href={'javascript:void(0)'}><span class="strong">{@html icon.upload()}&nbsp;UPLOAD</span></a>&nbsp;
-                                <a href={'javascript:void(0)'}><span class="strong">{@html icon.checkCircle()}&nbsp;APPROVE</span></a>
+                                <a href={'javascript:void(0)'}><span class="strong">{@html icon.upload()}&nbsp;UPLOAD</span></a>
+                                {#if (account.isStaff && row.type==='scan') || (!account.isStaff && row.type==='quotation') || (!account.isStaff && row.type==='design') } 
+                                <br/>
+                                <a href={'javascript:void(0)'} onclick={()=>openTransaction(row.type,'approve')}><span class="strong">{@html icon.checkCircle()}&nbsp;APPROVE</span></a>
+                                {/if}
                             {/if}
                             {#if job.levels[rowIndex]===2}
                                 <a href={'javascript:void(0)'}><span class="strong">{@html icon.upload()}&nbsp;UPLOAD</span></a>
+                                <br/>
+                                <p class="strong">Completed</p>
                             {/if}
                              
                         {/if}
@@ -359,6 +444,10 @@ onMount(async() => {
 .strong {
     font-weight:500;
 }
+
+ .text-capitalize {
+    text-transform: capitalize;
+  }
 
 .small {
     padding: 0.4rem;
