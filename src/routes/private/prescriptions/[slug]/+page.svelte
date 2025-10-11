@@ -1,6 +1,6 @@
 <script lang="ts">
 import { onMount } from 'svelte';
-import {capitalize, email, getAdminEmails,addTransaction} from '$lib/util';
+import {capitalize, email, getAdminEmails,addTransaction,updateLevel} from '$lib/util';
 import {toSimpleDate,getNewFileName} from '$lib/util';
 import Denture from '$lib/Denture.svelte';
 import {alert} from '$lib/state.svelte.js';
@@ -245,36 +245,9 @@ const createPDF=async()=>{
         console.log(x);
 
 		let res=await addTransaction(supabase,x,job.type,job.customer_email);
-		
-		/*
-		const { data:req,error:ereq } = await supabase.from('transactions').insert(x).select();
-		if(!ereq) {
-			 const content =`
-            <p>New prescription: ${job.type} ${job.customer_ref}</p>
-			<p>${job.first_name} ${job.last_name} (${job.customer_email})</p>
-			`;
 
-			let res=await email([job.customer_email, ... await getAdminEmails()],`New prescription, ${job.customer_ref}`,content)
-			if(!res) {
-				alert.type='error';
-				alert.msg='error sending email. otherwise OK';
-			} else {
-				goto(`/private/orders/${job.id}`);
-				let l=[...job.levels];
-				l[0]=1;
-				console.log(l,job.id);
-				const { data:djob,error:ejob } = await supabase.from('jobs').update({levels:l}).eq('id',job.id);
-				if(ejob) {
-						alert.type='error';
-						alert.msg='order status level not updated, otherwise OK';
-				}
-			}
-		} else {
-			alert.type='error';
-			alert.msg='precription created, transaction record not saved correctly';
-		}
-		*/
-        
+        await updateLevel(supabase,config.stages,job.id,'prescription',1);
+       
 		lockText='';
         showModal=false;
         

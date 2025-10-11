@@ -1,4 +1,5 @@
-import {alert} from '$lib/state.svelte'
+import {alert} from '$lib/state.svelte';
+
 
 export const toSimpleDate=(dateString:string):string=>{
     return new Date(dateString).toLocaleString('en-GB', { day:"numeric",month: 'short',year:"numeric" });
@@ -116,5 +117,27 @@ export const addTransaction=async(supabase:any,transaction:Transaction,job_type:
         alert.type='error';
         alert.msg=msg;
     }
+};
+
+export const updateLevel=async(supabase:any,stages:{type:string}[],job_id:number,levelName:string,levelValue:0|1|2)=>{
+    console.log(stages);
+
+    const { data:sdata,error:serr} = await supabase.from('jobs').select('levels').eq('id',job_id).single();
+
+    if(serr) {
+        console.log('error retrieving job, levels reset!');
+    }
+    let l=sdata && sdata?.levels ? sdata.levels : [0,0,0,0,0];
+    let f=stages.findIndex(el=>el.type===levelName);
+    if(f>-1) l[f]=levelValue;
+    console.log(l);
+
+    const { data:udata,error:uerr} = await supabase.from('jobs').update({levels:l}).eq('id',job_id);
+    if(uerr) {
+            alert.type='error';
+            alert.msg='order status level not updated';
+    }
+
+
 };
 

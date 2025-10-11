@@ -1,9 +1,18 @@
 <script>
+
+  import { onMount } from 'svelte';
+
   let { data, children } = $props();
-  let { account} = $derived(data);
+  let { account,config} = $derived(data);
+  
 
   //let { account } = $derived(data)
 
+  onMount(async() => {
+    console.log(config);
+   
+      
+  });
 </script>
 
 

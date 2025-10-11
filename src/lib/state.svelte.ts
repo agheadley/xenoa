@@ -8,3 +8,4 @@ export const alert = $state({msg:"",type:'',ms:3000});
 
 
 export const delay = async(ms:number) => new Promise(res => setTimeout(res, ms));
+

@@ -1,7 +1,7 @@
 <script lang="ts">
 import { invalidate ,goto} from '$app/navigation';
 import { onMount } from 'svelte';
-import {getAdminEmails,email,addTransaction} from '$lib/util';
+import {getAdminEmails,email,addTransaction,updateLevel} from '$lib/util';
 import * as icon from '$lib/icon';
 import {toSimpleDate} from '$lib/util';
 import {alert} from '$lib/state.svelte.js';
@@ -9,14 +9,31 @@ import {alert} from '$lib/state.svelte.js';
 import Modal from '$lib/Modal.svelte';
 
 let { data } = $props();
-let { account,profiles,supabase,job,fileList,job_data} = $derived(data);
+let { account,profiles,supabase,job,fileList,job_data,config} = $derived(data);
 
 let showModal : boolean = $state(true);
 let isUpdate : boolean  = $state(false);
 
 let isMessage : boolean = $state(false);
+let isDelete : boolean = $state(false);
+let deleteType : string = $state('');
+let deleteName : string=$state('');
 
 let logText:string=$state('');
+let deleteText:string=$state('');
+
+interface Transaction {
+			id?:number,
+			job_id:number,
+			customer_id:string,
+			user_email:string,
+			created_at?:string,
+			file_name:string,
+			is_new:boolean,
+			type:string,
+			log:string
+		};
+
 
 const download=async(fn:string)=>{
     let t=Date.now();
@@ -36,8 +53,15 @@ const download=async(fn:string)=>{
 		document.body.appendChild(a);
 		a.click();
 		document.body.removeChild(a);
-     
+    
 	}
+};
+
+const openDelete=(fileName:string,type:string)=>{
+    deleteName=fileName;
+    deleteType=type;
+    isDelete=true;
+    showModal=true;
 };
 
 const openMessages=()=>{
@@ -45,19 +69,57 @@ const openMessages=()=>{
     showModal=true;
 };
 
+const removeFile=async()=>{
+    console.log('deleting file...',deleteName);
+    const { data, error } = await supabase.storage.from('order-files')
+        .remove([`${job.customer_id}/${deleteName}`]);
+    console.log(data,error);
+    if(error) {
+        alert.type='error';
+        alert.msg='error deleting file';
+    } else {
+         	let x:Transaction={
+			customer_id:job.customer_id,
+			type:deleteType,
+			log:'delete file',
+			user_email:String(account.email),
+			job_id:job.id,
+			is_new:true,
+			file_name:deleteName
+		};
+
+        console.log(x);
+
+		let res=await addTransaction(supabase,x,job.type,job.customer_email);
+      
+
+        let f=job_data.findIndex(el=>el.type===deleteType);
+        let count=f>-1 && job_data[f].files?.length ? job_data[f].files.length : 0;
+        if(count<2) {
+            console.log('removing last file, returning status level to 0');
+             await updateLevel(supabase,config.stages,job.id,deleteType,0);
+        } else {
+            console.log('other files exist, keep status at level 1');
+             await updateLevel(supabase,config.stages,job.id,deleteType,1);
+        }
+      
+    
+
+    }
+
+    invalidate('supabase:db:jobs');
+
+        
+
+    deleteName='';
+    deleteText='';
+    isDelete=false;
+    showModal=false;
+};
+
 let addMsg=async()=>{
     
-    	interface Transaction {
-			id?:number,
-			job_id:number,
-			customer_id:string,
-			user_email:string,
-			created_at?:string,
-			file_name:string,
-			is_new:boolean,
-			type:string,
-			log:string
-		};
+    	
 
 		let x:Transaction={
 			customer_id:job.customer_id,
@@ -74,41 +136,11 @@ let addMsg=async()=>{
 		let res=await addTransaction(supabase,x,job.type,job.customer_email);
     
 
-        /*
-        const msg={job_id:job.id,customer_id:job.customer_id,user_email:account.email,file_name:'',is_new:true,type:'message',log:logText};
     
-    
-    
-    
-    const { data,error } = await supabase.from('transactions').insert(msg).select();
-    if(!error) {
-         const content =`
-            <p>New message: ${job.type} ${job.customer_ref}</p><p>${job.first_name} ${job.last_name} (${job.customer_email})</p>
-            <p>${logText}</p>
-            `;
-
-            const cc=await getAdminEmails();
-            
-            console.log(job);
-            let to:string[]= [job.customer_email,...cc];
-            console.log(cc,to,job);
-            let res=await email(to, `New order, ${job.customer_ref} `, content);
-            if(!res) {
-                 alert.type='error';
-                 alert.msg='error - message saved, but email failed.';
-            }
-          
-    } else {
-        alert.type='error';
-        alert.msg='error - message not saved';
-    }
-
-    */
-
-    logText='';
-    isMessage=false;
-    showModal=false;
-    isUpdate=true;
+        logText='';
+        isMessage=false;
+        showModal=false;
+        isUpdate=true;
 };
 
 $effect(() => {
@@ -138,6 +170,8 @@ onMount(async() => {
     console.log(job_data,job);
     if(job.transactions.reduce((acc: number,curr: { is_new: any; })=>curr.is_new ? acc+1 : acc,0)>0) openMessages();
     
+
+   
 });
 
 
@@ -157,6 +191,28 @@ onMount(async() => {
 </svelte:head>
 
 
+
+
+{#if isDelete && showModal}
+   <Modal bind:showModal>
+  {#snippet header()}
+  <h3>Delete File</h3>
+  {/snippet}
+  <p>Deleting a file will reset status so approval will still be required to progress.</p>
+  <p>You can upload more files.</p>
+  <p>Type <span class="strong text-error">delete {deleteType}</span> to confirm</p>
+ <p>
+    <input type=text bind:value={deleteText}/>
+</p><p>
+     <button disabled={deleteText!==`delete ${deleteType}`} class="button error" onclick={removeFile}>Delete</button>
+     <button class="button outline" onclick={()=>showModal=false}>Cancel</button>
+</p>
+
+
+</Modal>
+{/if}
+
+
 {#if isMessage && showModal}
     <Modal bind:showModal>
     {#snippet header()}
@@ -168,7 +224,10 @@ onMount(async() => {
     {#each job.transactions as row,rowIndex}
     <div class="msg">
         <div class="row">
-             <div class="col"><span class="">{row.log==='file' ? row.file_name : row.log}</span></div>  
+             <div class="col small"><b>{row.type}</b></div>  
+        </div>
+        <div class="row">
+             <div class="col small"><span class="">{row.log==='file' ? row.file_name : row.log}</span></div>  
         </div>
         <div class="row">
             <div class="col"><span class="small">{toSimpleDate(row.created_at)}</span></div>
@@ -222,7 +281,7 @@ onMount(async() => {
                         {:else if row.type==='manufacture'}
                             
                             {#if job.levels[rowIndex]===0}
-                                <a href={'javascript:void(0)'}><span class="strong">{@html icon.play()}PRODUCTION</span></a>
+                                <a href={'javascript:void(0)'}><span class="strong">{@html icon.play()}PRODUCE</span></a>
                             {/if}
                             {#if job.levels[rowIndex]===1}
                                  <a href={'javascript:void(0)'}><span class="strong">{@html icon.truck()}&nbsp;SHIP</span></a>
@@ -250,7 +309,7 @@ onMount(async() => {
                     </div>
                       <div class="col-9">
                          {#each row.files as f,fIndex}
-                                <a href={'javascript:void(0)'}>{@html icon.trash()}</a>&nbsp;&nbsp;&nbsp;
+                                <a href={'javascript:void(0)'} onclick={()=>openDelete(f.name,row.type)}>{@html icon.trash()}</a>&nbsp;&nbsp;&nbsp;
                                 <a href={'javascript:void(0)'}  onclick={()=>download(f.name)}>{@html icon.download()} {f.name}</a> <span class="tag is small">{toSimpleDate(f.created_at)}</span>
                           <br/>
                         {/each}
@@ -359,6 +418,7 @@ onMount(async() => {
 	height:100%;
 	flex-direction:column;
 	justify-content: space-between;
+
 }
 
 
