@@ -6,10 +6,14 @@ import * as icon from '$lib/icon';
 import {toSimpleDate} from '$lib/util';
 import {alert} from '$lib/state.svelte.js';
 
+import { tick } from 'svelte';
+import {PUBLIC_SUPABASE_URL} from '$env/static/public';
+import * as tus from 'tus-js-client';
+
 import Modal from '$lib/Modal.svelte';
 
 let { data } = $props();
-let { account,profiles,supabase,job,fileList,job_data,config} = $derived(data);
+let { account,profiles,supabase,job,fileList,job_data,config,session} = $derived(data);
 
 let showModal : boolean = $state(true);
 let isUpdate : boolean  = $state(false);
@@ -27,6 +31,14 @@ let isTransaction : boolean = $state(false);
 let transactionType:string = $state('');
 let transactionText:string = $state('');
 let transactionComment:string = $state('');
+
+let isUpload : boolean = $state(false);
+let uploadName:string = $state('');
+let uploadType:string = $state('');
+let uploadPercentage:number = $state(0);
+let files:any = $state();
+let uploadComplete=$state(false);
+let uploadError=$state(false);
 
 interface Transaction {
 			id?:number,
@@ -63,12 +75,28 @@ const download=async(fn:string)=>{
 	}
 };
 
+
+const openUpload=(type:string)=>{
+    uploadType=type;
+    uploadName='';
+    isMessage=false;
+    isDelete=false;
+    isTransaction=false;
+    isUpload=true;
+
+    uploadPercentage=0;
+
+    showModal=true;
+
+};
+
 const openDelete=(fileName:string,type:string)=>{
     deleteName=fileName;
     deleteType=type;
 
     isTransaction=false;
     isMessage=false;
+    isUpload=false;
 
     isDelete=true;
     showModal=true;
@@ -77,6 +105,8 @@ const openDelete=(fileName:string,type:string)=>{
 const openMessages=()=>{
     isDelete=false;
     isTransaction=false;
+    isUpload=false;
+
     isMessage=true;
     showModal=true;
 };
@@ -88,6 +118,7 @@ const openTransaction=(type:string,text:string)=>{
 
     isMessage=false;
     isDelete=false;
+    isUpload=false;
     isTransaction=true;
 
     showModal=true;
@@ -201,6 +232,123 @@ let addMsg=async()=>{
         isUpdate=true;
 };
 
+
+
+const upload=async()=>{
+
+    console.log('upload file',files[0]);
+    uploadTus(job.customer_id,uploadName).then(()=>{
+    
+
+    (async () => {
+      
+        let x:Transaction={
+			customer_id:job.customer_id,
+			type:uploadType,
+			log:'file',
+			user_email:String(account.email),
+			job_id:job.id,
+			is_new:true,
+			file_name:uploadName
+		};
+
+        console.log(x);
+
+		let res=await addTransaction(supabase,x,job.type,job.customer_email);
+        await updateLevel(supabase,config.stages,job.id,uploadType,1);
+    
+        uploadType='';
+        uploadName='';
+        isUpload=false;
+        uploadPercentage=0;
+        showModal=false;
+        invalidate('supabase:db:jobs');
+
+
+    })(); 
+    }).catch((error)=>{
+        alert.type='error';
+        alert.msg='error uploading file'
+        console.error(error);
+    });
+
+
+   
+
+};
+
+
+const uploadTus=async(customer_id:string,fn:string)=> {
+uploadPercentage=0;
+return (new Promise<void>((resolve, reject):Promise<void> => {
+    var upload = new tus.Upload(files[0], {
+        endpoint: `${PUBLIC_SUPABASE_URL}/storage/v1/upload/resumable`,
+        retryDelays: [0, 3000, 5000, 10000, 20000],
+        headers: {
+            authorization: `Bearer ${session? session.access_token :''}`,
+            'x-upsert': 'true', // optionally set upsert to true to overwrite existing files
+        },
+        uploadDataDuringCreation: true,
+        removeFingerprintOnSuccess: true, // Important if you want to allow re-uploading the same file https://github.com/tus/tus-js-client/blob/main/docs/api.md#removefingerprintonsuccess
+        metadata: {
+            bucketName: 'order-files',
+            objectName: `${customer_id}/${uploadName}`,
+            contentType: 'application/octet-stream',
+            // @ts-ignore
+            cacheControl: 3600
+        },
+        chunkSize: 6 * 1024 * 1024, // NOTE: it must be set to 6MB (for now) do not change it
+        onError: function (error) {
+            //console.log('Failed because: ' + error)
+            uploadComplete=false;
+            uploadError=true;
+            reject(error)
+        },
+        onProgress: function (bytesUploaded, bytesTotal) {
+            //var percentage = ((bytesUploaded / bytesTotal) * 100).toFixed(2);
+            uploadPercentage=Math.round((bytesUploaded / bytesTotal) * 100);
+            console.log(bytesUploaded, bytesTotal, uploadPercentage + '%')
+        },
+        onSuccess: function (){
+            // @ts-ignore
+            //console.log('Uploaded %s to %s', upload.file.name, upload.url)
+            uploadComplete=true;
+            uploadError=false;
+            //log({log:`file upload (${fn})`,table_name:'order_files',order_id:order.id,user_id:account.id,customer_id:order.customer_id,user_email:account.email,customer_email:order.customer_email});
+            
+            resolve()
+        },
+    })
+    // Check if there are any previous uploads to continue.
+    return upload.findPreviousUploads().then(function (previousUploads) {
+        // Found previous uploads so we select the first one.
+        if (previousUploads.length) {
+            upload.resumeFromPreviousUpload(previousUploads[0])
+        }
+        // Start the upload
+        upload.start()
+    })
+}))
+};
+
+
+const populateUploadName=()=>{
+    let all =files?.[0]?.name ? files[0].name : '';
+    let x= all.split('.');
+    let ext=x?.[1] ? x[1] : 'xxx';
+    let name = ext!=='xxx' ? x[0] : all;
+    name=name.replace(/[^a-zA-Z0-9-_]/g,'');
+    //name=name.replace(/ /g,'');
+	name = name.length>15 ? name.slice(0,15) : name;
+    uploadName=`${name}.${ext}`;
+    
+};
+
+const validate=()=>{
+	uploadName=uploadName.replace(/[^a-zA-Z0-9-_]+$/g,'');
+	uploadName = uploadName.length>15 ? uploadName.slice(0,15) : uploadName;
+};
+
 $effect(() => {
      if(isUpdate) {
 		isUpdate=false;
@@ -247,6 +395,29 @@ onMount(async() => {
 	<title>Orders</title>
 	<meta name="description" content="Implantify" />
 </svelte:head>
+
+
+{#if isUpload && showModal}
+   <Modal bind:showModal>
+  {#snippet header()}
+  <h3><span class="text-capitalize">upload {uploadType}</span></h3>
+  {/snippet}
+    {#if uploadType==='scan'}
+    <p>DICOM format CT scans expected, often as a .zip file</p>
+    {/if}
+    <p>  <input accept="" bind:files  type="file" onchange={populateUploadName}/></p>
+    <p>  <span class="tag">{Math.round(uploadPercentage)}%</span></p>
+    <p>Edit file name (max 15 characters)</p>
+	<p><input type=text bind:value={uploadName} oninput={validate}/></p>
+<p>
+     <button  disabled={!files}  class="button primary" onclick={upload}>Upload</button>
+     <button class="button outline" onclick={()=>showModal=false}>Cancel</button>
+</p>
+
+
+</Modal>
+{/if}
+
 
 {#if isTransaction && showModal}
    <Modal bind:showModal>
@@ -374,19 +545,26 @@ onMount(async() => {
                              
                         {:else}
                             {#if job.levels[rowIndex]===0}
-                                <a href={'javascript:void(0)'}><span class="strong">{@html icon.upload()}&nbsp;UPLOAD</span></a>
+                                 {#if (!account.isStaff && row.type==='scan') || (account.isStaff && row.type==='quotation') || (account.isStaff && row.type==='design') } 
+                                <a href={'javascript:void(0)'} onclick={()=>openUpload(row.type)}><span class="strong">{@html icon.upload()}&nbsp;UPLOAD</span></a>
+                                {/if}
                             {/if}
                             {#if job.levels[rowIndex]===1}
-                                <a href={'javascript:void(0)'}><span class="strong">{@html icon.upload()}&nbsp;UPLOAD</span></a>
+                                  {#if (!account.isStaff && row.type==='scan') || (account.isStaff && row.type==='quotation') || (account.isStaff && row.type==='design') } 
+                             
+                                <a href={'javascript:void(0)'} onclick={()=>openUpload(row.type)}><span class="strong">{@html icon.upload()}&nbsp;UPLOAD</span></a>
+                                 <br/>    
+                                {/if}
                                 {#if (account.isStaff && row.type==='scan') || (!account.isStaff && row.type==='quotation') || (!account.isStaff && row.type==='design') } 
-                                <br/>
+                               
                                 <a href={'javascript:void(0)'} onclick={()=>openTransaction(row.type,'approve')}><span class="strong">{@html icon.checkCircle()}&nbsp;APPROVE</span></a>
                                 {/if}
                             {/if}
                             {#if job.levels[rowIndex]===2}
-                                <a href={'javascript:void(0)'}><span class="strong">{@html icon.upload()}&nbsp;UPLOAD</span></a>
+                                <a href={'javascript:void(0)'} onclick={()=>openUpload(row.type)}><span class="strong">{@html icon.upload()}&nbsp;UPLOAD</span></a>
                                 <br/>
                                 <p class="strong">Completed</p>
+                                <a href={'javascript:void(0)'}>{@html icon.rotateCcw()}&nbsp;RESET</a>
                             {/if}
                              
                         {/if}
