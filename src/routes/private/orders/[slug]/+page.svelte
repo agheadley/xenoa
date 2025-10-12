@@ -239,6 +239,11 @@ let addMsg=async()=>{
 const upload=async()=>{
 
     console.log('upload file',files[0]);
+
+    let x= uploadName.split('.');
+    uploadName=`${x[0]}_${job.id}.${x[1]}`;
+
+
     uploadTus(job.customer_id,uploadName).then(()=>{
     
 
@@ -342,7 +347,7 @@ const populateUploadName=()=>{
     name=name.replace(/[^a-zA-Z0-9-_]/g,'');
     //name=name.replace(/ /g,'');
 	name = name.length>15 ? name.slice(0,15) : name;
-    uploadName=`${name}_${job.id}.${ext}`;
+    uploadName=`${name}.${ext}`;
     
 };
 
