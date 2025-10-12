@@ -184,7 +184,24 @@ USING (public.is_admin_user(auth.uid()))
 
 ```
 
+# config
 
+```
+create table public.config(
+    id int primary key generated always as identity,
+    type text not null default format(''::text),
+    data jsonb not null default '{}'::jsonb,
+    created_at timestamp with time zone DEFAULT now()
+);
+
+alter table config enable row level security;
+
+CREATE POLICY "Users can read"
+ON public.config
+FOR SELECT
+TO authenticated
+USING (true);
+```
 # jobs
 
 ```
