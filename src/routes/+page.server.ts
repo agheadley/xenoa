@@ -1,29 +1,15 @@
 import { redirect } from '@sveltejs/kit';
 //import { error } from '@sveltejs/kit';
-import { CALLBACK_URL,RESEND_KEY } from '$env/static/private';
+import { CALLBACK_URL,RESEND_KEY,ADMIN_EMAILS } from '$env/static/private';
 import {PUBLIC_URL} from '$env/static/public';
 import type { Actions } from './$types';
 import { Resend } from 'resend';
-import { PUBLIC_SUPABASE_URL } from '$env/static/public';
-import {SUPABASE_SERVICE_ROLE_KEY} from '$env/static/private';
-import { json } from '@sveltejs/kit';
-
-export const config = {
-    runtime: 'edge', // this is a pre-requisite
-  };
-
-let headers= {
-    'Access-Control-Request-Headers': '*',
-    'Content-Type': 'application/json',
-    'apikey': `${SUPABASE_SERVICE_ROLE_KEY}`,
-    'Authorization': `Bearer ${SUPABASE_SERVICE_ROLE_KEY}`
-};
 
 
-/**
- * Return admin emails, uses service role key
- * @returns {string[]}
- */
+
+
+
+
 
 
 
@@ -74,19 +60,13 @@ export const actions: Actions = {
 
     
 
-    let url  =`${PUBLIC_SUPABASE_URL}/rest/v1/profiles?limit=2000&select=email&is_admin=eq.true`;
-    
-
-    let response = await fetch(url,{method: 'GET',headers: headers});
-    let res=await response.json();
-   
-    res = res?.[0] ? res.map((el: { email: any; })=>el.email) : [];
+    let to = ADMIN_EMAILS.split(',');
 
 
     const resend = new Resend(RESEND_KEY);
     const { data, error } = await resend.emails.send({
         from: 'noreply@portal.implantify.eu',
-        to: res,
+        to: to,
         subject: 'New Customer Application!',
         html: `<p>
         <img style="margin: 0; border: 0; padding: 0; display: block;" width="300" src="https://portal.implantify.eu/_app/immutable/assets/logo.2wviG-VA.png"/>

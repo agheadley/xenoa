@@ -1,3 +1,10 @@
+
+# to do
+
+- test domain reg, to see if we can repoly to resend email and it forwards to staff
+
+
+
 # delete old functions e.g.
 
 ```
