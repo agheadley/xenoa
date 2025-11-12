@@ -1,4 +1,5 @@
 import {alert} from '$lib/state.svelte';
+import {ADMIN_EMAILS} from '$env/static/private';
 
 
 export const toSimpleDate=(dateString:string):string=>{
@@ -38,7 +39,7 @@ export const getNewFileName=(filename:string,order_id:number):string=>{
 
 
 
-
+// not used currently, env var ADMIN_EMAILS instead
 export const getAdminEmails=async():Promise<string[]>=>{
       const response = await fetch('/private/api/admins', {
                 method: 'POST',
@@ -109,7 +110,7 @@ export const addTransaction=async(supabase:any,transaction:Transaction,job_type:
     if(error) msg='error adding transaction ';
 
     // send email
-    let to:string[]= [customer_email,...await getAdminEmails()];
+    let to:string[]= [customer_email,ADMIN_EMAILS];
     let res=await email(to, `New Activity, ${job_type} `, `<p>Area : ${transaction.type}</p><p>Log : ${transaction.log}</p>`);
     if(!res) msg+='error sending email';
 
