@@ -1,5 +1,5 @@
 import {alert} from '$lib/state.svelte';
-import {ADMIN_EMAILS} from '$env/static/private';
+
 
 
 export const toSimpleDate=(dateString:string):string=>{
@@ -110,7 +110,7 @@ export const addTransaction=async(supabase:any,transaction:Transaction,job_type:
     if(error) msg='error adding transaction ';
 
     // send email
-    let to:string[]= [customer_email,ADMIN_EMAILS];
+    let to:string[]= [customer_email];
     let res=await email(to, `New Activity, ${job_type} `, `<p>Area : ${transaction.type}</p><p>Log : ${transaction.log}</p>`);
     if(!res) msg+='error sending email';
 
