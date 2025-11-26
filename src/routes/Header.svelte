@@ -151,6 +151,7 @@ function closeNav() {
 		z-index:1000;
 		background:white;
 		font-size:1.5rem;
+		
 	
 	}
 

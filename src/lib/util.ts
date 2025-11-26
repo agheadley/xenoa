@@ -40,6 +40,7 @@ export const getNewFileName=(filename:string,order_id:number):string=>{
 
 
 // not used currently, env var ADMIN_EMAILS instead
+/*
 export const getAdminEmails=async():Promise<string[]>=>{
       const response = await fetch('/private/api/admins', {
                 method: 'POST',
@@ -50,6 +51,7 @@ export const getAdminEmails=async():Promise<string[]>=>{
       //console.log(cc);
       return cc;
 };
+*/
 
 export const email=async(to:string[],subject:string,html:string):Promise<boolean>=>{
 

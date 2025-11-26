@@ -1,6 +1,6 @@
 <script lang="ts">
 import { onMount } from 'svelte';
-import {capitalize, email, getAdminEmails,addTransaction,updateLevel} from '$lib/util';
+import {capitalize, email,addTransaction,updateLevel} from '$lib/util';
 import {toSimpleDate,getNewFileName} from '$lib/util';
 import Denture from '$lib/Denture.svelte';
 import {alert} from '$lib/state.svelte.js';
@@ -8,7 +8,7 @@ import Modal from '$lib/Modal.svelte';
 
 import { PDFDocument } from 'pdf-lib';
 import { PageSizes } from 'pdf-lib';
-import { rgb } from 'pdf-lib';
+import { rgb,degrees,grayscale } from 'pdf-lib';
 import { goto } from '$app/navigation';
 
 	
@@ -57,6 +57,18 @@ export const makePrescription = async(teatments:Prescription[])=>{
 
     page1.drawText('Surgeon',{size:14,x:20,y:750});
 
+    page1.drawRectangle({
+        x: 18,
+        y: 520,
+        width: 420,
+        height: 220,
+        rotate: degrees(0),
+        borderWidth: 0,
+        borderColor: grayscale(0.5),
+        color: rgb(0.1, 0.1, 0.1),
+        opacity: 0.2,
+        borderOpacity: 0.75,
+    });
     
     prescriptions.filter(el=>el.section==='surgeon').forEach((item,index)=>{
         page1.drawText(String(capitalize(item.item.replaceAll('_',' '))),{size:10,x:20,y:730-index*15});
@@ -66,6 +78,19 @@ export const makePrescription = async(teatments:Prescription[])=>{
 
 
     page1.drawText('Patient',{size:14,x:20,y:500});
+
+     page1.drawRectangle({
+        x: 18,
+        y: 830,
+        width: 420,
+        height: 300,
+        rotate: degrees(0),
+        borderWidth: 0,
+        borderColor: grayscale(0.5),
+        color: rgb(0.1, 0.1, 0.1),
+        opacity: 0.2,
+        borderOpacity: 0.75,
+    });
   
      prescriptions.filter(el=>el.section==='patient' && !el.item.includes('notes')).forEach((item,index)=>{
         page1.drawText(String(capitalize(item.item.replaceAll('_',' '))),{size:10,x:20,y:480-index*15});
@@ -372,6 +397,9 @@ onMount(async() => {
            
             {:else if row.item.includes('date')}
              <input type=date bind:value={row.choice} onblur={()=>store(rowIndex)}/>
+             <i class="text-error">Please take sterilisation time into account</i>
+             <br/>
+           
             {:else}
                <input type=text bind:value={row.choice} onblur={()=>store(rowIndex)}/>
             {/if}

@@ -30,6 +30,7 @@ export async function POST({request}) {
         <p>&nbsp;</p>
         <p><a href="${PUBLIC_URL}">Sign In</a> to access the customer portal</p>
         <p>&nbsp;</p>
+        <p>Best wishes</p>
         <p>The Implantify Team</p>`
     });
 

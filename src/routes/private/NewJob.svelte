@@ -154,8 +154,8 @@ onMount(async() => {
   </select>
 </label>
 {/if}
-<label>Customer Reference
-  <input type=text name="ref" bind:value={job.customer_ref}/>
+<label>Your reference
+  <input type=text name="ref" bind:value={job.customer_ref} placeholder='example - your purchase order code'/>
 </label>
 
   </p>

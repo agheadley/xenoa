@@ -1,7 +1,7 @@
 <script lang="ts">
 import { invalidate ,goto} from '$app/navigation';
 import { onMount } from 'svelte';
-import {getAdminEmails,email,addTransaction,updateLevel} from '$lib/util';
+import {email,addTransaction,updateLevel} from '$lib/util';
 import * as icon from '$lib/icon';
 import {toSimpleDate} from '$lib/util';
 import {alert} from '$lib/state.svelte.js';
@@ -495,7 +495,7 @@ onMount(async() => {
 {#if isMessage && showModal}
     <Modal bind:showModal>
     {#snippet header()}
-    <h3>Activity Log</h3>
+    <h3>Chat</h3>
     {/snippet} 
     <p><textarea rows="4" bind:value={logText}></textarea></p>
     <p><button class="button primary icon"onclick={addMsg}>{@html icon.send()}&nbsp;Send</button></p>
@@ -528,7 +528,7 @@ onMount(async() => {
         {job.type} <i>{job.customer_ref}</i>
      </div>
      <div class="col is-right">
-        <button class="button primary icon" onclick={openMessages}>{@html icon.messageCircle()}&nbsp;Activity Log</button>
+        <button class="button primary icon" onclick={openMessages}>{@html icon.messageCircle()}&nbsp;Chat</button>
     </div>
 </div> 	
 
