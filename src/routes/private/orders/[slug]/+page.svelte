@@ -459,7 +459,27 @@ onMount(async() => {
   {#snippet header()}
   <h3><span class="text-capitalize">{transactionText} {transactionType}</span></h3>
   {/snippet}
-  <p>Add a message if required e.g. tracking code for shipping or comment.</p>
+    {#if transactionType==='quotation'}
+         {#if transactionText==='approve'}
+             <p>By approving this quotation you are accepting the terms and agreeing to the price given. Please read your quotation carefully before approving.</p>
+        {:else}
+            <p>Add a comment if necessary.</p>
+        {/if}
+    {:else if transactionType==='prescription'}
+         <p>Add a comment if necessary.</p>
+    {:else if transactionType==='scan'}
+        <p>Add a comment if necessary.</p>
+    {:else if transactionType==='design'}
+        {#if transactionText==='approve'}
+            <p>Please check design carefully before approval.</p>
+        {:else}
+            <p>Add a comment if necessary.</p>
+        {/if}
+
+    {:else if transactionType==='manufacture'}
+        <p>Add a message if required e.g. tracking code for shipping, comments on manufacture</p>
+    {/if}
+ 
  
     <p><textarea rows="4" bind:value={transactionComment}></textarea></p>
 <p>

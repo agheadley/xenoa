@@ -66,7 +66,7 @@ export const makePrescription = async(teatments:Prescription[])=>{
         borderWidth: 0,
         borderColor: grayscale(0.5),
         color: rgb(0.1, 0.1, 0.1),
-        opacity: 0.2,
+        opacity: 0.1,
         borderOpacity: 0.75,
     });
     
@@ -81,14 +81,14 @@ export const makePrescription = async(teatments:Prescription[])=>{
 
      page1.drawRectangle({
         x: 18,
-        y: 830,
+        y: 30,
         width: 420,
-        height: 300,
+        height: 460,
         rotate: degrees(0),
         borderWidth: 0,
         borderColor: grayscale(0.5),
         color: rgb(0.1, 0.1, 0.1),
-        opacity: 0.2,
+        opacity: 0.1,
         borderOpacity: 0.75,
     });
   
@@ -115,6 +115,19 @@ export const makePrescription = async(teatments:Prescription[])=>{
 
 
     page2.drawText('Device',{size:14,x:20,y:800});
+
+    page2.drawRectangle({
+        x: 18,
+        y: 450,
+        width: 420,
+        height: 340,
+        rotate: degrees(0),
+        borderWidth: 0,
+        borderColor: grayscale(0.5),
+        color: rgb(0.1, 0.1, 0.1),
+        opacity: 0.1,
+        borderOpacity: 0.75,
+    });
 
     
     prescriptions.filter(el=>el.section==='device' && !el.item.includes('notes')).forEach((item,index)=>{
@@ -148,7 +161,19 @@ export const makePrescription = async(teatments:Prescription[])=>{
 
     page2.drawText('Denture',{size:14,x:20,y:420});
 
- 
+    page2.drawRectangle({
+            x: 18,
+            y: 30,
+            width: 420,
+            height: 380,
+            rotate: degrees(0),
+            borderWidth: 0,
+            borderColor: grayscale(0.5),
+            color: rgb(0.1, 0.1, 0.1),
+            opacity: 0.1,
+            borderOpacity: 0.75,
+        });
+
     prescriptions.filter(el=>el.section==='denture' && el.item!=='denture' && el.item!=='denture_notes').forEach((item,index)=>{
         page2.drawText(String(capitalize(item.item.replaceAll('_',' '))),{size:10,x:20,y:400-index*15});
         page2.drawText(String(item?.choice) ? String(item.choice) : '',{size:10,x:250,y:400-index*15});
@@ -419,11 +444,18 @@ onMount(async() => {
             {:else if row.item==='implant_type'}
                <input disabled type=text bind:value={row.choice}/>
             {:else if row.item==='surface_type'}
-                 <select bind:value={row.choice} onchange={()=>store(rowIndex)} >
+                <select bind:value={row.choice} onchange={()=>store(rowIndex)} >
                 {#each ['Mirror','Sandblasted','Anodized'] as el}
                     <option value={el}>{el}</option>
                 {/each}
                 </select>
+            {:else if row.item==='bone_integration'}
+                   <select bind:value={row.choice} onchange={()=>store(rowIndex)} >
+                {#each ['Mesh','No mesh (smooth surface)'] as el}
+                    <option value={el}>{el}</option>
+                {/each}
+                </select>
+
             {:else if row.item.includes('dentition_type')}
              <select bind:value={row.choice} onchange={()=>store(rowIndex)}>
                 {#each ['Provisional Dentition','Definitive Dentition'] as el}
@@ -453,6 +485,13 @@ onMount(async() => {
                     <option value={el}>{el}</option>
                 {/each}
                 </select>
+            {:else if row.item==='denture_palatal'}
+                  <select bind:value={row.choice} onchange={()=>store(rowIndex)}>
+                {#each ['Include in prosthesis','Not required'] as el}
+                    <option value={el}>{el}</option>
+                {/each}
+                </select>
+
             {:else if row.item.includes('notes')}
                  <textarea rows=5 bind:value={row.choice} onblur={()=>store(rowIndex)}></textarea>
             {:else}
