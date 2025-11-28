@@ -294,7 +294,7 @@ const createPDF=async()=>{
 
         console.log(x);
 
-		let res=await addTransaction(supabase,x,job.type,job.customer_email);
+		let res=await addTransaction(supabase,x);
 
         await updateLevel(supabase,config.stages,job.id,'prescription',1);
        

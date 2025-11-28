@@ -53,11 +53,11 @@ export const getAdminEmails=async():Promise<string[]>=>{
 };
 */
 
-export const email=async(to:string[],subject:string,html:string):Promise<boolean>=>{
+export const email=async(to:string,subject:string,html:string,isToAdmin:boolean):Promise<boolean>=>{
 
     const response = await fetch('/private/api/email', {
         method: 'POST',
-        body: JSON.stringify({to:to,html:html,subject:subject}),
+        body: JSON.stringify({to:to,html:html,subject:subject,isToAdmin:isToAdmin}),
         headers: {'content-type': 'application/json'}
     });
     const res= await response.json();
@@ -91,19 +91,19 @@ export const getCustomers=(profiles:{id:string,first_name:string,last_name:strin
     return cs;
 };
 
-   interface Transaction {
-            id?:number,
-            created_at?:string,
-            job_id:number,
-            customer_id:string,
-            user_email:string,
-            file_name:string,
-            is_new:boolean,
-            type:string,
-            log:string
-        };
+interface Transaction {
+        id?:number,
+        created_at?:string,
+        job_id:number,
+        customer_id:string,
+        user_email:string,
+        file_name:string,
+        is_new:boolean,
+        type:string,
+        log:string
+    };
 
-export const addTransaction=async(supabase:any,transaction:Transaction,job_type:string,customer_email:string)=>{
+export const addTransaction=async(supabase:any,transaction:Transaction)=>{
     // add transaction
 
     let msg='';
@@ -111,24 +111,7 @@ export const addTransaction=async(supabase:any,transaction:Transaction,job_type:
     
     if(error) msg='error adding transaction ';
 
-    // send email
-    let to:string[]= [customer_email];
-    let subject=`New Message from the Implantify Team`;
-    let content=`<p>
-    <i>${transaction.customer_ref}</i> <b>${job_type}</b>
-    </p>
-    <p>
-    What's new ?
-    </p>
-    <p><u>${transaction.type}</u><b>${transaction.log}</b></p>
-    `;
-    let res=await email(to,subject,content);
-    if(!res) msg+='error sending email';
-
-    if(msg!=='') {
-        alert.type='error';
-        alert.msg=msg;
-    }
+   
 };
 
 export const updateLevel=async(supabase:any,stages:{type:string}[],job_id:number,levelName:string,levelValue:0|1|2)=>{

@@ -4,7 +4,7 @@ import { onMount } from 'svelte';
 import * as icon from '$lib/icon';
 import Modal from '$lib/Modal.svelte';
 import {alert} from '$lib/state.svelte';
-import {addTransaction,getCustomers} from '$lib/util';
+import {addTransaction,getCustomers,email} from '$lib/util';
 	
 let { isUpdate = $bindable(),supabase,config,account,profiles} = $props();
 
@@ -22,9 +22,8 @@ const updateDb=async():Promise<{isOK:boolean,msg:string}>=>{
 
     console.log(job);
     const { data:req,error:ereq } = await supabase.from('jobs').insert(job).select();
-    
-
     console.log(req,ereq);
+
     if (ereq) return {isOK:false,msg:'error creating order'};
     newId = req?.[0]?.id ? req[0].id : 0;
 
@@ -76,11 +75,7 @@ const createjob=async():Promise<void>=>{
             file_name:string,
             is_new:boolean,
             type:string,
-            log:string,
-            customer_ref?:string,
-            customer_email?:string,
-            patient_name?:string
-
+            log:string
         };
 
         
@@ -93,10 +88,22 @@ const createjob=async():Promise<void>=>{
             type:'order',
             log:'New order received'
         };
-         
-        
-        let res=await addTransaction(supabase,x,job.type,job.customer_email);
+
        
+        let html=`
+        <p></p>
+        <p>New Order Created</p>
+        <p>${job.first_name} ${job.last_name} ${job.customer_email}</p>
+        <p></p>
+        <p>Order : <b>${job.type}</b></p>
+        <p>Customer Reference <b>${job.customer_ref}</b></p>
+        <p></p>
+        <p>You will need to complete the prescription and upload scan(s). Please sign in to view advice on required scans.</p>
+        <p></p>
+        `;
+        
+        let res=await addTransaction(supabase,x);
+        let res2=await email(job.customer_email,'Implantify - New Order',html,true);
        
        
        
