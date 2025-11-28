@@ -76,7 +76,11 @@ const createjob=async():Promise<void>=>{
             file_name:string,
             is_new:boolean,
             type:string,
-            log:string
+            log:string,
+            customer_ref?:string,
+            customer_email?:string,
+            patient_name?:string
+
         };
 
         
@@ -87,7 +91,7 @@ const createjob=async():Promise<void>=>{
             file_name:'',
             is_new:true,
             type:'order',
-            log:'new order'
+            log:'New order received'
         };
          
         

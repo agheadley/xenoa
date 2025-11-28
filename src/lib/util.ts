@@ -93,10 +93,10 @@ export const getCustomers=(profiles:{id:string,first_name:string,last_name:strin
 
    interface Transaction {
             id?:number,
+            created_at?:string,
             job_id:number,
             customer_id:string,
             user_email:string,
-            created_at?:string,
             file_name:string,
             is_new:boolean,
             type:string,
@@ -113,7 +113,16 @@ export const addTransaction=async(supabase:any,transaction:Transaction,job_type:
 
     // send email
     let to:string[]= [customer_email];
-    let res=await email(to, `New Activity, ${job_type} `, `<p>Area : ${transaction.type}</p><p>Log : ${transaction.log}</p>`);
+    let subject=`New Message from the Implantify Team`;
+    let content=`<p>
+    <i>${transaction.customer_ref}</i> <b>${job_type}</b>
+    </p>
+    <p>
+    What's new ?
+    </p>
+    <p><u>${transaction.type}</u><b>${transaction.log}</b></p>
+    `;
+    let res=await email(to,subject,content);
     if(!res) msg+='error sending email';
 
     if(msg!=='') {

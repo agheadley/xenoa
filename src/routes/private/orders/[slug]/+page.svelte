@@ -30,6 +30,7 @@ let deleteText:string=$state('');
 let isTransaction : boolean = $state(false);
 let transactionType:string = $state('');
 let transactionText:string = $state('');
+let approveText:string=$state('');
 let transactionComment:string = $state('');
 
 let isUpload : boolean = $state(false);
@@ -115,6 +116,7 @@ const openTransaction=(type:string,text:string)=>{
     transactionType=type;
     transactionText=text;
     transactionComment='';
+    approveText='';
 
     isMessage=false;
     isDelete=false;
@@ -461,8 +463,9 @@ onMount(async() => {
   {/snippet}
     {#if transactionType==='quotation'}
          {#if transactionText==='approve'}
-             <p>By approving this quotation you are accepting the terms and agreeing to the price given. Please read your quotation carefully before approving.</p>
-        {:else}
+             <p class="text-error">By approving this quotation you are accepting the terms and agreeing to the price given. Please read your quotation carefully before approving.</p>
+            <p>Type <span class='strong'>approve {transactionType}</span> to confirm your approval</p>
+             {:else}
             <p>Add a comment if necessary.</p>
         {/if}
     {:else if transactionType==='prescription'}
@@ -480,10 +483,17 @@ onMount(async() => {
         <p>Add a message if required e.g. tracking code for shipping, comments on manufacture</p>
     {/if}
  
- 
+     {#if transactionText==='approve'}
+    <p><input type="text" bind:value={approveText}/></p>
+     {:else}
     <p><textarea rows="4" bind:value={transactionComment}></textarea></p>
+    {/if}
 <p>
+         {#if transactionText==='approve'}
+     <button disabled={approveText!==`approve ${transactionType}`} class="button primary" onclick={processTransaction}><span class="text-capitalize">{transactionText}</span></button>
+     {:else}
      <button class="button primary" onclick={processTransaction}><span class="text-capitalize">{transactionText}</span></button>
+     {/if}
      <button class="button outline" onclick={()=>showModal=false}>Cancel</button>
 </p>
 
