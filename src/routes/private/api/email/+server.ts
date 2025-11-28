@@ -23,7 +23,7 @@ export async function POST({request}) {
 
     let to = req.isToAdmin ? [req.to, ...ADMIN_EMAILS.split(',')] : [req.to];
 
-    console.log(req,to);
+    //console.log(req,to);
 
     const { data, error } = await resend.emails.send({
         from: 'noreply@portal.implantify.eu',

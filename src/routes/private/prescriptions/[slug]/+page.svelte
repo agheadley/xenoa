@@ -296,6 +296,28 @@ const createPDF=async()=>{
 
 		let res=await addTransaction(supabase,x);
 
+
+        let f=prescriptions.find(el=>el.section==='patient' && el.item==='first_name');
+        let l=prescriptions.find(el=>el.section==='patient' && el.item==='last_name');
+        
+        let pn = f && l ? f.choice+' '+l.choice : '';
+
+        let html=`
+        <p></p>
+        <p>Prescription Completed</p>
+        <p>${job.first_name} ${job.last_name} ${job.customer_email}</p>
+        <p></p>
+        <p>Order  <b>${job.type}</b></p>
+        <p>Customer Reference <b>${job.customer_ref}</b></p>
+        <p>Patient Name <b>${pn}</b>
+        <p></p>
+        <p>You will need to complete the prescription and upload scan(s). Please sign in to view advice on required scans.</p>
+        <p></p>
+        `;
+        let res2=await email(job.customer_email,'Implantify - Prescription Completed',html,true);
+       
+
+
         await updateLevel(supabase,config.stages,job.id,'prescription',1);
        
 		lockText='';
@@ -340,6 +362,7 @@ onMount(async() => {
 
     let f=prescriptions.findIndex(el=>el.item==='implant_type');
     if(f>-1) prescriptions[f].choice=job.type;
+
    
     //for(let item of prescriptions) console.log(item.section,item);
 });

@@ -1,7 +1,7 @@
 <script lang="ts">
 import { invalidate ,goto} from '$app/navigation';
 import { onMount } from 'svelte';
-import {email,addTransaction,updateLevel} from '$lib/util';
+import {email,addTransaction,updateLevel,capitalize} from '$lib/util';
 import * as icon from '$lib/icon';
 import {toSimpleDate} from '$lib/util';
 import {alert} from '$lib/state.svelte.js';
@@ -40,6 +40,8 @@ let uploadPercentage:number = $state(0);
 let files:any = $state();
 let uploadComplete=$state(false);
 let uploadError=$state(false);
+
+let patientName='';
 
 interface Transaction {
 			id?:number,
@@ -127,12 +129,34 @@ const openTransaction=(type:string,text:string)=>{
 };
 
 const processTransaction=async()=>{
+
+
     let log=`${transactionType} ${transactionText}. Comments: ${transactionComment}`;
+
+    let content='';
+    let subject='Implantify - New Activity';
+
+    let isToAdmins=false;
+
     if(transactionText==='approve') {
-        log=`${transactionType} has been approved!`;
+        log=`${transactionType} approved by ${account.email}`;
+        isToAdmins=true;
+        subject=`Implantify - ${capitalize(transactionType)} Approved`;
+        content=`<p>${capitalize(transactionType)} Approved</p>
+        <p>Please check in with your order and contact the team quickly if you have any concerns.</p>
+        `;
     } else {
         log = transactionText === 'ship' ? 'product shipped' : log;
         log = transactionText === 'start' ? 'manufacture started' : log;
+        subject = transactionText === 'ship' ? 'Implantify - Product Shipped' : subject;
+        subject = transactionText === 'start' ? 'Implantify - Manufacture Started' : subject;
+        content= transactionText === 'ship'  ?`<p>Product Shipped</p>
+        <p>${transactionComment}</p>
+        ` : content;
+          content= transactionText === 'start'  ?`<p>Manufacture Started</p>
+        <p>${transactionComment}</p>
+        ` : content;
+       
     }
 
     let x:Transaction={
@@ -145,6 +169,27 @@ const processTransaction=async()=>{
 			file_name:''
 	};
     let res=await addTransaction(supabase,x);
+
+
+
+    let html=`
+        <p></p>
+        <p>${job.first_name} ${job.last_name} ${job.customer_email}</p>
+        <p></p>
+        <p>Order  <b>${job.type}</b></p>
+        <p>Customer Reference <b>${job.customer_ref}</b></p>
+        <p>Patient Name <b>${patientName}</b>
+        <p></p>
+        <p>${content}</p>
+        <p></p>
+        `;
+    let res2=await email(job.customer_email,subject,html,isToAdmins);
+       
+
+
+
+
+
     let l : 0|1|2 = 0;
 
     console.log(transactionText);
@@ -235,7 +280,20 @@ let addMsg=async()=>{
         console.log(x);
 
 		let res=await addTransaction(supabase,x);
-    
+        
+        let html=`
+        <p></p>
+        <p>${job.first_name} ${job.last_name} ${job.customer_email}</p>
+        <p></p>
+        <p>Order  <b>${job.type}</b></p>
+        <p>Customer Reference <b>${job.customer_ref}</b></p>
+        <p>Patient Name <b>${patientName}</b>
+        <p></p>
+        <p>${logText}</p>
+        <p></p>
+        `;
+        let subject = account.email===job.customer_email ? 'Implantify - New Message Sent to The Implantify Team' : 'Implantify - new Message from Customer';
+        let res2=await email(job.customer_email,subject,html,account.email===job.customer_email ? true : false);
 
     
         logText='';
@@ -272,6 +330,24 @@ const upload=async()=>{
         console.log(x);
 
 		let res=await addTransaction(supabase,x);
+
+        let html=`
+        <p></p>
+        <p>${job.first_name} ${job.last_name} ${job.customer_email}</p>
+        <p></p>
+        <p>Order  <b>${job.type}</b></p>
+        <p>Customer Reference <b>${job.customer_ref}</b></p>
+        <p>Patient Name <b>${patientName}</b>
+        <p></p>
+        <p>New file uploaded to ${capitalize(uploadType)} , ${uploadName}</p>
+        <p></p>
+        `;
+        let subject = 'Implantify - New File Uploaded';
+        let res2=await email(job.customer_email,subject,html,account.email===job.customer_email ? true : false);
+
+
+
+
         await updateLevel(supabase,config.stages,job.id,uploadType,1);
     
         uploadType='';
@@ -422,6 +498,11 @@ onMount(async() => {
     if(job.transactions.reduce((acc: number,curr: { is_new: any; })=>curr.is_new ? acc+1 : acc,0)>0) openMessages();
     
 
+     let fx=job.prescriptions.find((el: { section: string; item: string; })=>el.section==='patient' && el.item==='first_name');
+     let lx=job.prescriptions.find((el: { section: string; item: string; })=>el.section==='patient' && el.item==='last_name');
+     patientName = fx && lx ? fx.choice+' '+lx.choice : '';
+
+     console.log('patient',patientName);
    
 });
 
@@ -477,12 +558,14 @@ onMount(async() => {
             <p>Add a comment if necessary.</p>
         {/if}
     {:else if transactionType==='prescription'}
-         <p>Add a comment if necessary.</p>
+          <p>Type <span class='strong'>approve {transactionType}</span> to confirm your approval</p>
     {:else if transactionType==='scan'}
-        <p>Add a comment if necessary.</p>
+         <p>Type <span class='strong'>approve {transactionType}</span> to confirm your approval</p>
     {:else if transactionType==='design'}
         {#if transactionText==='approve'}
-            <p>Please check design carefully before approval.</p>
+             <p class="text-error">By approving this design you are accepting that the team will begin manufacture. Please look over the design carefully before approving and chat with the team if you need changes.</p>
+            <p>Type <span class='strong'>approve {transactionType}</span> to confirm your approval</p>
+         
         {:else}
             <p>Add a comment if necessary.</p>
         {/if}

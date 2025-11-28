@@ -95,7 +95,7 @@ const createjob=async():Promise<void>=>{
         <p>New Order Created</p>
         <p>${job.first_name} ${job.last_name} ${job.customer_email}</p>
         <p></p>
-        <p>Order : <b>${job.type}</b></p>
+        <p>Order <b>${job.type}</b></p>
         <p>Customer Reference <b>${job.customer_ref}</b></p>
         <p></p>
         <p>You will need to complete the prescription and upload scan(s). Please sign in to view advice on required scans.</p>
