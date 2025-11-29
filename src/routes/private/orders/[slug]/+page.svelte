@@ -12,6 +12,12 @@ import * as tus from 'tus-js-client';
 
 import Modal from '$lib/Modal.svelte';
 
+import scan1 from '$lib/images/scan-help1.png';
+import scan2 from '$lib/images/scan-help2.png';
+import scan3 from '$lib/images/scan-help3.png';
+
+	
+
 let { data } = $props();
 let { account,profiles,supabase,job,fileList,job_data,config,session} = $derived(data);
 
@@ -562,6 +568,30 @@ onMount(async() => {
   <h3><span class="text-capitalize">Required Scans</span></h3>
   {/snippet}
     <p>DICOM format CT scans expected, often as a .zip file</p>
+    <div class="row">
+        <div class="col">
+            <img src={scan1} alt="skull scan"/>
+        </div>
+        <div class="col">
+            CT scan n1: Skull and dental prosthesis with 8 radioplaque scan markers
+        </div>
+    </div>
+    <div class="row">
+        <div class="col">
+            <img src={scan2} alt="dental prosthesis scan"/>
+        </div>
+        <div class="col">
+            CT scan n2 : Dental prosthesis with 8 radioplaque scan markers
+        </div>
+    </div>
+    <div class="row">
+        <div class="col">
+            <img src={scan3} alt="inter oral scan"/>
+        </div>
+        <div class="col">
+            Inter oral scan of the upper and lower dentition
+        </div>
+    </div>
    <p>
      <button class="button outline" onclick={()=>showModal=false}>Close</button>
 </p>
@@ -577,7 +607,7 @@ onMount(async() => {
   <h3><span class="text-capitalize">upload {uploadType}</span></h3>
   {/snippet}
     {#if uploadType==='scan'}
-    <p>DICOM format CT scans expected, often as a .zip file</p>
+    <p class="text-error">DICOM format CT scans expected, often as a .zip file. Open <button class="button outline" onclick={openScan}>Scan Help</button> for advice.</p>
     {/if}
     <p>  <input accept="" bind:files  type="file" onchange={populateUploadName}/></p>
     <p>  <span class="tag">{Math.round(uploadPercentage)}%</span></p>
@@ -726,7 +756,10 @@ onMount(async() => {
                                  {#if account.isStaff}
                                  <br/>
                                  <a href={'javascript:void(0)'} onclick={()=>openTransaction('prescription','approve')}><span class="strong">{@html icon.checkCircle()}&nbsp;APPROVE</span></a>
-                                {/if}
+                                  {:else}
+                                    <br/>
+                                     <p class="strong">Waiting for approval...</p>
+                                 {/if}
                             {/if}
                             
                             {#if job.levels[rowIndex]===2}
@@ -748,6 +781,8 @@ onMount(async() => {
                                     <br/>    
                                     {#if account.isStaff} 
                                         <a href={'javascript:void(0)'} onclick={()=>openTransaction(row.type,'approve')}><span class="strong">{@html icon.checkCircle()}&nbsp;APPROVE</span></a>
+                                    {:else}
+                                     <p class="strong">Waiting for approval...</p>
                                     {/if}
                                 {/if}
                                 {#if job.levels[rowIndex]===2}
