@@ -59,6 +59,7 @@ $effect(() => {
        if(isUpdate) {
             console.log('updating jobs...');
             invalidate('supabase:db:jobs');
+            jobs=[...jobData];
             isUpdate=false;
        }
 	   if(!showModal && isNew) {
