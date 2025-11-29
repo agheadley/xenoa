@@ -1,6 +1,9 @@
 
 # to do
 
+- prescription, 1 page, remove comment boxes
+- prescription denture image on prescription (get main img from Unit8 bitmap, add circles)
+- price list ? £ € $ ? , does it need to interact with prescription ?
 - test domain reg, to see if we can repoly to resend email and it forwards to staff
 
 
