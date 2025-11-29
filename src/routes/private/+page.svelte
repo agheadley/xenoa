@@ -56,17 +56,19 @@ const openPrice=()=>{
 
 
 $effect(() => {
-       if(isUpdate) {
-            console.log('updating jobs...');
-            invalidate('supabase:db:jobs');
-            jobs=[...jobData];
-            isUpdate=false;
-       }
-	   if(!showModal && isNew) {
-		console.log('new activity seen!!!');
-		isNew=false;
-        isPrice=false;
-	   }
+        (async () => {
+        if(isUpdate) {
+                console.log('updating jobs...');
+                await invalidate('supabase:db:jobs');
+                jobs=[...jobData];
+                isUpdate=false;
+        }
+        if(!showModal && isNew) {
+            console.log('new activity seen!!!');
+            isNew=false;
+            isPrice=false;
+        }
+        })();
 });
 
 
