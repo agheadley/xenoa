@@ -33,6 +33,7 @@ let transactionText:string = $state('');
 let approveText:string=$state('');
 let transactionComment:string = $state('');
 
+let isScan: boolean = $state(false);
 let isUpload : boolean = $state(false);
 let uploadName:string = $state('');
 let uploadType:string = $state('');
@@ -42,6 +43,12 @@ let uploadComplete=$state(false);
 let uploadError=$state(false);
 
 let patientName='';
+
+let fileNames:string[]=$state([]);
+let fileCheck:boolean=$state(false);
+let fileExt:string=$state('');
+
+
 
 interface Transaction {
 			id?:number,
@@ -86,6 +93,7 @@ const openUpload=(type:string)=>{
     isDelete=false;
     isTransaction=false;
     isUpload=true;
+    isScan=false;
 
     uploadPercentage=0;
 
@@ -100,6 +108,7 @@ const openDelete=(fileName:string,type:string)=>{
     isTransaction=false;
     isMessage=false;
     isUpload=false;
+    isScan=false;
 
     isDelete=true;
     showModal=true;
@@ -109,9 +118,21 @@ const openMessages=()=>{
     isDelete=false;
     isTransaction=false;
     isUpload=false;
+    isScan=false;
 
     isMessage=true;
     showModal=true;
+};
+
+const openScan=()=>{
+    isDelete=false;
+    isTransaction=false;
+    isUpload=false;
+    isMessage=false;
+
+    isScan=true;
+    showModal=true;
+
 };
 
 const openTransaction=(type:string,text:string)=>{
@@ -308,8 +329,7 @@ const upload=async()=>{
 
     console.log('upload file',files[0]);
 
-    let x= uploadName.split('.');
-    uploadName=`${x[0]}_${job.id}.${x[1]}`;
+    uploadName=`${uploadName}_${job.id}.${fileExt}`;
 
 
     uploadTus(job.customer_id,uploadName).then(()=>{
@@ -428,18 +448,24 @@ return (new Promise<void>((resolve, reject):Promise<void> => {
 const populateUploadName=()=>{
     let all =files?.[0]?.name ? files[0].name : '';
     let x= all.split('.');
-    let ext=x?.[1] ? x[1] : 'xxx';
-    let name = ext!=='xxx' ? x[0] : all;
+    fileExt=x?.[1] ? x[1] : 'xxx';
+    let name = fileExt!=='xxx' ? x[0] : all;
     name=name.replace(/[^a-zA-Z0-9-_]/g,'');
     //name=name.replace(/ /g,'');
 	name = name.length>15 ? name.slice(0,15) : name;
-    uploadName=`${name}.${ext}`;
+    uploadName=`${name}`;
+    fileCheck=fileNames.includes(`${name}_${job.id}.${fileExt}`) ? true : false;
+    console.log('fileExt',fileExt);
     
 };
 
 const validate=()=>{
 	uploadName=uploadName.replace(/[^a-zA-Z0-9-_]+$/g,'');
 	uploadName = uploadName.length>15 ? uploadName.slice(0,15) : uploadName;
+    let x= uploadName.split('.');
+    //let ext=x?.[1] ? x[1] : 'xxx';
+    console.log(`${x[0]}_${job.id}.${fileExt}`);
+    fileCheck=fileNames.includes(`${x[0]}_${job.id}.${fileExt}`) ? true : false;
 };
 
 const reset=async(type:string)=>{
@@ -490,6 +516,10 @@ $effect(() => {
 
     
      }
+
+     if(isScan && !showModal) {
+        isScan=false;
+     }
 });
 
 
@@ -502,7 +532,11 @@ onMount(async() => {
      let lx=job.prescriptions.find((el: { section: string; item: string; })=>el.section==='patient' && el.item==='last_name');
      patientName = fx && lx ? fx.choice+' '+lx.choice : '';
 
-     console.log('patient',patientName);
+     //console.log('patient',patientName);
+
+    fileNames=fileList.map(el=>el.name);
+    //console.log(fileNames);
+
    
 });
 
@@ -522,6 +556,20 @@ onMount(async() => {
 	<meta name="description" content="Implantify" />
 </svelte:head>
 
+{#if isScan && showModal}
+   <Modal bind:showModal>
+  {#snippet header()}
+  <h3><span class="text-capitalize">Required Scans</span></h3>
+  {/snippet}
+    <p>DICOM format CT scans expected, often as a .zip file</p>
+   <p>
+     <button class="button outline" onclick={()=>showModal=false}>Close</button>
+</p>
+
+
+</Modal>
+{/if}
+
 
 {#if isUpload && showModal}
    <Modal bind:showModal>
@@ -534,9 +582,14 @@ onMount(async() => {
     <p>  <input accept="" bind:files  type="file" onchange={populateUploadName}/></p>
     <p>  <span class="tag">{Math.round(uploadPercentage)}%</span></p>
     <p>Edit file name (max 15 characters)</p>
+      {#if fileCheck}
+    <p class="text-error">Duplicate file name detected please change.</p>
+    {:else}
+    <p>&nbsp;</p>
+    {/if}
 	<p><input type=text bind:value={uploadName} oninput={validate}/></p>
 <p>
-     <button  disabled={!files}  class="button primary" onclick={upload}>Upload</button>
+     <button  disabled={!files || fileCheck || uploadName===''}  class="button primary" onclick={upload}>Upload</button>
      <button class="button outline" onclick={()=>showModal=false}>Cancel</button>
 </p>
 
@@ -649,6 +702,7 @@ onMount(async() => {
         {job.type} <i>{job.customer_ref}</i>
      </div>
      <div class="col is-right">
+        <button class="button outline" onclick={openScan}>Scan Help</button>
         <button class="button primary icon" onclick={openMessages}>{@html icon.messageCircle()}&nbsp;Chat</button>
     </div>
 </div> 	
@@ -765,19 +819,24 @@ onMount(async() => {
                                 {/if}
                             
                         {:else if row.type==='manufacture'}
-                            {#if account.isStaff}
+                         
                             {#if job.levels[rowIndex]===0}
-                                <a href={'javascript:void(0)'} onclick={()=>openTransaction('manufacture','start')}><span class="strong">{@html icon.play()}START</span></a>
+                                {#if account.isStaff}
+                                    <a href={'javascript:void(0)'} onclick={()=>openTransaction('manufacture','start')}><span class="strong">{@html icon.play()}START</span></a>
+                                {/if}
                             {/if}
                             {#if job.levels[rowIndex]===1}
-                                 <a href={'javascript:void(0)'} onclick={()=>openTransaction('manufacture','ship')}><span class="strong">{@html icon.truck()}&nbsp;SHIP</span></a>
+                                 <p class="strong">Manufacture Started</p>
+                                {#if account.isStaff}
+                                    <a href={'javascript:void(0)'} onclick={()=>openTransaction('manufacture','ship')}><span class="strong">{@html icon.truck()}&nbsp;SHIP</span></a>
+                                {/if}
                             {/if}
-                            {/if}
+                            
                             {#if job.levels[rowIndex]===2}
-                                <p class="strong">Completed</p>
-                                   {#if account.isStaff}
-                                 <a href={'javascript:void(0)'} onclick={()=>reset(row.type)}><span class="strong">{@html icon.rotateCcw()}&nbsp;RESET</span></a>
-                                    {/if}
+                                <p class="strong">Shipped</p>
+                                {#if account.isStaff}
+                                    <a href={'javascript:void(0)'} onclick={()=>reset(row.type)}><span class="strong">{@html icon.rotateCcw()}&nbsp;RESET</span></a>
+                                {/if}
                             {/if}
                            
                             

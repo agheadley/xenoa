@@ -13,7 +13,9 @@ import Progress from '$lib/Progress.svelte';
 	
 
 let { data } = $props();
-let { account,profiles,supabase,config,jobs} = $derived(data);
+let { account,profiles,supabase,config,jobData} = $derived(data);
+
+let jobs:any=$state([]);
 
 let sortIndex=$state(1);
 let sortList=['Completion Least-Most','New to Old','Old to New'];
@@ -30,16 +32,25 @@ let isNew=$state(false);
 
 let menu = $state({list:['All','Me'],index:0});
 
+let isPrice=$state(false);
+
 
 const sortOrders=()=>{
     //'Completion Least-Most','New to Old','Old to New'
 
     if(sortList[sortIndex]==='Completion Least-Most') 
-        jobs = jobs.sort((a,b)=>a.total-b.total|| (Number(new Date(a.created_at))-Number(new Date(b.created_at))));
+        jobs = jobs.sort((a: { total: number; created_at: string | number | Date; },b: { total: number; created_at: string | number | Date; })=>a.total-b.total|| (Number(new Date(a.created_at))-Number(new Date(b.created_at))));
     else if(sortList[sortIndex]==='Old to New') 
-        jobs= jobs.sort((a,b)=>Number(new Date(a.created_at))-Number(new Date(b.created_at)));
-    else jobs= jobs.sort((a,b)=>Number(new Date(b.created_at))-Number(new Date(a.created_at)));
+        jobs= jobs.sort((a: { created_at: string | number | Date; },b: { created_at: string | number | Date; })=>Number(new Date(a.created_at))-Number(new Date(b.created_at)));
+    else jobs= jobs.sort((a: { created_at: string | number | Date; },b: { created_at: string | number | Date; })=>Number(new Date(b.created_at))-Number(new Date(a.created_at)));
+
+    console.dir('sort orders',jobs);
     
+};
+
+const openPrice=()=>{
+    isPrice=true;
+    showModal=true;
 };
 
 
@@ -53,6 +64,7 @@ $effect(() => {
 	   if(!showModal && isNew) {
 		console.log('new activity seen!!!');
 		isNew=false;
+        isPrice=false;
 	   }
 });
 
@@ -60,13 +72,16 @@ $effect(() => {
 onMount(async() => {
   console.log('private/+page.svelte ...');
   console.log(jobs);
-  newActivity=jobs.map(el=>({id:el.id,job_id:el.id,type:el.type,customer_ref:el.customer_ref,customer_email:el.customer_email,activity:el.transactions.reduce((acc:number,curr)=>curr.is_new ?acc+1 : acc,0 )}));
+  newActivity=jobs.map((el: { id: any; type: any; customer_ref: any; customer_email: any; transactions: any[]; })=>({id:el.id,job_id:el.id,type:el.type,customer_ref:el.customer_ref,customer_email:el.customer_email,activity:el.transactions.reduce((acc:number,curr: { is_new: any; })=>curr.is_new ?acc+1 : acc,0 )}));
   console.log(newActivity);
 
   if(newActivity.reduce((acc,curr)=>acc+curr.activity,0)>0) {
 	showModal=true;
 	isNew=true;
   }
+
+  console.log(jobData);
+  jobs=[...jobData];
    
 });
 
@@ -77,6 +92,20 @@ onMount(async() => {
 	<title>Orders</title>
 	<meta name="description" content="Implantify" />
 </svelte:head>
+
+{#if showModal && isPrice}
+	<Modal bind:showModal>
+    {#snippet header()}
+    <h3>Implant Price List</h3>
+    {/snippet} 
+
+	<p>Prices here!</p>
+	<p>Contact the team if you need a custom implant that isn't shown.</p>
+	<p>
+	<button class="button outline" onclick={()=>showModal=false}>Close</button>
+	</p>
+    </Modal>
+{/if}
 
 {#if showModal && isNew}
 	<Modal bind:showModal>
@@ -135,6 +164,10 @@ onMount(async() => {
         <option value={rowIndex}>Sort by {row}</option>
         {/each}
         </select>
+    </div>
+
+    <div class="col-4 is-right">
+        <button class="button outline" onclick={openPrice}>Price List</button>
     </div>
 
    

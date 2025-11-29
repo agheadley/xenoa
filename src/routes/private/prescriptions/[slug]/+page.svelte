@@ -14,7 +14,7 @@ import { goto } from '$app/navigation';
 	
 
 let { data } = $props();
-let { account,profiles,supabase,config,job} = $derived(data);
+let { account,profiles,supabase,config,job,fileList} = $derived(data);
 
 interface Prescription {
     id:number,
@@ -31,8 +31,10 @@ let prescriptions:Prescription[]=$state([]);
 
 let showModal:boolean = $state(true);
 let isSubmit:boolean=$state(false);
-let lockText:string=$state("");
+let lockText:string=$state("prescription");
 
+let fileNames:string[]=$state([]);
+let fileCheck:boolean=$state(false);
 
 
 export const makePrescription = async(teatments:Prescription[])=>{
@@ -331,7 +333,9 @@ const createPDF=async()=>{
 
 
 const lock=()=>{
-	lockText="";
+	lockText="prescription";
+    fileCheck=fileNames.includes(`${lockText}_${job.id}.pdf`) ? true : false;
+
 	isSubmit=true;
 	showModal=true;
 };
@@ -347,8 +351,11 @@ const store=async(index:number)=>{
 };
 
 const validate=()=>{
+
 	lockText=lockText.replace(/[^a-zA-Z0-9-_]+$/g,'');
 	lockText = lockText.length>15 ? lockText.slice(0,15) : lockText;
+    fileCheck=fileNames.includes(`${lockText}_${job.id}.pdf`) ? true : false;
+
 };
 
 
@@ -362,6 +369,9 @@ onMount(async() => {
 
     let f=prescriptions.findIndex(el=>el.item==='implant_type');
     if(f>-1) prescriptions[f].choice=job.type;
+
+    fileNames=fileList.map(el=>el.name);
+    //console.log(fileNames);
 
    
     //for(let item of prescriptions) console.log(item.section,item);
@@ -395,9 +405,13 @@ onMount(async() => {
 
 	<p>Enter file name (max 15 characters)</p>
 	<p><input type=text bind:value={lockText} oninput={validate}/></p>
-
+    {#if fileCheck}
+    <p class="text-error">Duplicate file name detected please change.</p>
+    {:else}
+    <p>&nbsp;</p>
+    {/if}
 	<p>
-		<button class="button primary" disabled={lockText==''} onclick={createPDF}>Create PDF</button>
+		<button class="button primary" disabled={lockText=='' || fileCheck} onclick={createPDF}>Create PDF</button>
 		<button class="button outline" onclick={()=>showModal=false}>Cancel</button>
 	</p>
     </Modal>

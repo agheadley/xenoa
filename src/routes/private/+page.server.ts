@@ -52,7 +52,7 @@ export const load: PageServerLoad = async ({ depends,params,locals: { supabase }
     const jobData:Job[] = jobs?.[0] ? jobs.map(el=>({...el,prescriptions:[],total:el.levels.reduce((acc: number,curr:number)=>acc+curr,0)})) : [];
     
     return {
-       jobs:jobData??[]
+       jobData:jobData??[]
     };
 
 };
