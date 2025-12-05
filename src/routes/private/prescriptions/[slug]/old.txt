@@ -46,7 +46,7 @@ export const makePrescription = async(teatments:Prescription[])=>{
     /* A4 as 595pt*842pt */
    
     const page1 = pdfDoc.insertPage(0, PageSizes.A4)
-    //const page2 = pdfDoc.insertPage(1, PageSizes.A4)
+    const page2 = pdfDoc.insertPage(1, PageSizes.A4)
    
     page1.drawText(`Prescription ${job.type} ${job.customer_ref} ${toSimpleDate(job.created_at)}  `,{size:12,x:20,y:800});
     page1.drawLine({
@@ -59,50 +59,149 @@ export const makePrescription = async(teatments:Prescription[])=>{
 
     page1.drawText('Surgeon',{size:14,x:20,y:750});
 
-   
+    page1.drawRectangle({
+        x: 18,
+        y: 520,
+        width: 420,
+        height: 220,
+        rotate: degrees(0),
+        borderWidth: 0,
+        borderColor: grayscale(0.5),
+        color: rgb(0.1, 0.1, 0.1),
+        opacity: 0.1,
+        borderOpacity: 0.75,
+    });
     
     prescriptions.filter(el=>el.section==='surgeon').forEach((item,index)=>{
-        page1.drawText(String(capitalize(item.item.replaceAll('_',' '))),{size:8,x:20,y:730-index*25});
-        page1.drawText(String(item.choice),{size:10,x:20,y:720-index*25});
+        page1.drawText(String(capitalize(item.item.replaceAll('_',' '))),{size:10,x:20,y:730-index*15});
+        page1.drawText(String(item.choice),{size:10,x:250,y:730-index*15});
     });
     
 
 
-    page1.drawText('Patient',{size:14,x:200,y:750});
+    page1.drawText('Patient',{size:14,x:20,y:500});
 
-    
+     page1.drawRectangle({
+        x: 18,
+        y: 30,
+        width: 420,
+        height: 460,
+        rotate: degrees(0),
+        borderWidth: 0,
+        borderColor: grayscale(0.5),
+        color: rgb(0.1, 0.1, 0.1),
+        opacity: 0.1,
+        borderOpacity: 0.75,
+    });
   
      prescriptions.filter(el=>el.section==='patient' && !el.item.includes('notes')).forEach((item,index)=>{
-        page1.drawText(String(capitalize(item.item.replaceAll('_',' '))),{size:8,x:200,y:730-index*25});
-        page1.drawText(String(item.choice),{size:10,x:200,y:720-index*25});
+        page1.drawText(String(capitalize(item.item.replaceAll('_',' '))),{size:10,x:20,y:480-index*15});
+        page1.drawText(String(item.choice),{size:10,x:250,y:480-index*15});
     });
+       let f=prescriptions.find(el=>el.item==='prescription_notes');
+       if(f) {
+        page1.drawText(String(capitalize(f.item.replaceAll('_',' '))),{size:10,x:20,y:380});
+        page1.drawText(String(f.choice) , {
+            x: 20,
+            y: 360,
+            size: 10,
+            maxWidth: 500,
+            wordBreaks: [" "],
+            lineHeight: 15,
+            color: rgb(0, 0, 0),
+        });
+    }
+ 
 
-      
-    page1.drawText('Device',{size:14,x:400,y:750});
 
-    prescriptions.filter(el=>el.section==='device' && !el.item.includes('notes')).forEach((item,index)=>{
-        page1.drawText(String(capitalize(item.item.replaceAll('_',' '))),{size:8,x:400,y:730-index*25});
-        page1.drawText(String(item.choice),{size:10,x:400,y:720-index*25});
-    });
-   
-   
 
-    page1.drawText('Denture',{size:14,x:20,y:420});
 
-   
+    page2.drawText('Device',{size:14,x:20,y:800});
 
-    prescriptions.filter(el=>el.section==='denture' && el.item!=='denture' && el.item!=='denture_notes').forEach((item,index)=>{
-        page1.drawText(String(capitalize(item.item.replaceAll('_',' '))),{size:8,x:20,y:400-index*25});
-        page1.drawText(String(item?.choice) ? String(item.choice) : '',{size:10,x:20,y:390-index*25});
+    page2.drawRectangle({
+        x: 18,
+        y: 450,
+        width: 420,
+        height: 340,
+        rotate: degrees(0),
+        borderWidth: 0,
+        borderColor: grayscale(0.5),
+        color: rgb(0.1, 0.1, 0.1),
+        opacity: 0.1,
+        borderOpacity: 0.75,
     });
 
     
+    prescriptions.filter(el=>el.section==='device' && !el.item.includes('notes')).forEach((item,index)=>{
+        page2.drawText(String(capitalize(item.item.replaceAll('_',' '))),{size:10,x:20,y:780-index*15});
+        page2.drawText(String(item.choice),{size:10,x:250,y:780-index*15});
+    });
+    f=prescriptions.find(el=>el.item==='specification_notes');
+    if(f) {
+        page2.drawText(String(capitalize(f.item.replaceAll('_',' '))),{size:10,x:20,y:620});
+        page2.drawText(String(f.choice) , {
+            x: 20,
+            y: 600,
+            size: 10,
+            maxWidth: 500,
+            wordBreaks: [" "],
+            lineHeight: 15,
+            color: rgb(0, 0, 0),
+        });
+    }
+   
+        
+   
+
+   
+
+
+
+   
+
+    
+
+    page2.drawText('Denture',{size:14,x:20,y:420});
+
+    page2.drawRectangle({
+            x: 18,
+            y: 30,
+            width: 420,
+            height: 380,
+            rotate: degrees(0),
+            borderWidth: 0,
+            borderColor: grayscale(0.5),
+            color: rgb(0.1, 0.1, 0.1),
+            opacity: 0.1,
+            borderOpacity: 0.75,
+        });
+
+    prescriptions.filter(el=>el.section==='denture' && el.item!=='denture' && el.item!=='denture_notes').forEach((item,index)=>{
+        page2.drawText(String(capitalize(item.item.replaceAll('_',' '))),{size:10,x:20,y:400-index*15});
+        page2.drawText(String(item?.choice) ? String(item.choice) : '',{size:10,x:250,y:400-index*15});
+    });
+
+    f=prescriptions.find(el=>el.item==='denture_notes');
+    if(f) {
+       
+        page2.drawText(String(capitalize(f.item.replaceAll('_',' '))),{size:10,x:20,y:310});
+        page2.drawText(String(f.choice) ? String(f.choice) : '', {
+            x: 20,
+            y: 290,
+            size: 10,
+            maxWidth: 500,
+            wordBreaks: [" "],
+            lineHeight: 15,
+            color: rgb(0, 0, 0),
+      
+        });
+    }
 
     let ur='';
     let ul='';
     let lr='';
     let ll='';
-    let f=prescriptions.find(el=>el.item==='denture');
+    f=prescriptions.find(el=>el.item==='denture');
 
    
     if(f) {
@@ -119,22 +218,22 @@ export const makePrescription = async(teatments:Prescription[])=>{
 
 
 
-    page1.drawText('Dentures Required',{size:10,x:20,y:320});
+    page2.drawText('Dentures Required',{size:10,x:20,y:100});
       
-    page1.drawText(`UR ${ur}`,{size:10,x:20,y:300});
-    page1.drawText(`UL ${ul}`,{size:10,x:100,y:300});
-    page1.drawText(`LR ${lr}`,{size:10,x:20,y:285});
-    page1.drawText(`LL ${ll}`,{size:10,x:100,y:285});
-    page1.drawLine({
-        start: { x: 20, y: 295},
-        end: { x:150, y: 295 },
+    page2.drawText(`UR ${ur}`,{size:10,x:20,y:80});
+    page2.drawText(`UL ${ul}`,{size:10,x:100,y:80});
+    page2.drawText(`LR ${lr}`,{size:10,x:20,y:65});
+    page2.drawText(`LL ${ll}`,{size:10,x:100,y:65});
+    page2.drawLine({
+        start: { x: 20, y: 75},
+        end: { x:150, y: 75 },
         thickness: 1,
         color: rgb(0, 0, 0),
         opacity: 0.75,
     });
-     page1.drawLine({
-        start: { x: 95, y: 310},
-        end: { x:95, y: 280 },
+     page2.drawLine({
+        start: { x: 95, y: 90},
+        end: { x:95, y: 60 },
         thickness: 1,
         color: rgb(0, 0, 0),
         opacity: 0.75,
@@ -146,7 +245,8 @@ export const makePrescription = async(teatments:Prescription[])=>{
     const byteArray = new Uint8Array(pdfBytes);
 
 
-   
+    //console.log(byteArray);
+
     return byteArray;
 
 };
@@ -156,10 +256,7 @@ const createPDF=async()=>{
 	const byteArray = await makePrescription(prescriptions);
     console.log(byteArray);
 
-    
-    // testing
-    lockText=String(Date.now());
-
+    console.log();
     const fn=getNewFileName(`${lockText}_${job.id}.pdf`,job.id);
     
     const { data, error } = await supabase
@@ -292,8 +389,6 @@ onMount(async() => {
 	<p>Prescriptions are <b>AUTOMATICALLY SAVED</b> as you enter data.</p>
 	<p>Use <button disabled class="button primary">Lock & Create Final PDF</button> when you are ready to submit it as a PDF for the Implantify team.</p> 
 	<p><button class="button outline" onclick={()=>showModal=false}>Close</button></p>
-    
-    <p><button onclick={createPDF}>Test</button></p>
     </Modal>
 
 {/if}
