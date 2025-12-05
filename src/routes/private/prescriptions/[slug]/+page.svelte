@@ -212,7 +212,7 @@ const createPDF=async()=>{
 
     
     // testing
-    lockText=String(Date.now());
+    //lockText=String(Date.now());
 
     const fn=getNewFileName(`${lockText}_${job.id}.pdf`,job.id);
     
@@ -346,8 +346,6 @@ onMount(async() => {
 	<p>Prescriptions are <b>AUTOMATICALLY SAVED</b> as you enter data.</p>
 	<p>Use <button disabled class="button primary">Lock & Create Final PDF</button> when you are ready to submit it as a PDF for the Implantify team.</p> 
 	<p><button class="button outline" onclick={()=>showModal=false}>Close</button></p>
-    
-    <p><button onclick={createPDF}>Test</button></p>
     </Modal>
 
 {/if}
