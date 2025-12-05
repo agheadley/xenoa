@@ -48,7 +48,7 @@ export const makePrescription = async(teatments:Prescription[])=>{
     const page1 = pdfDoc.insertPage(0, PageSizes.A4)
     //const page2 = pdfDoc.insertPage(1, PageSizes.A4)
    
-    page1.drawText(`Prescription ${job.type} ${job.customer_ref} ${toSimpleDate(job.created_at)}  `,{size:12,x:20,y:800});
+    page1.drawText(`Prescription - ${job.type} -  ${job.customer_ref} -  ${toSimpleDate(job.created_at)}  `,{size:12,x:20,y:800});
     page1.drawLine({
         start: { x: 20, y: 780 },
         end: { x:560, y: 780 },
@@ -117,6 +117,8 @@ export const makePrescription = async(teatments:Prescription[])=>{
         console.log('ll',ll);
     }
 
+    
+
 
 
     page1.drawText('Dentures Required',{size:10,x:20,y:320});
@@ -139,6 +141,58 @@ export const makePrescription = async(teatments:Prescription[])=>{
         color: rgb(0, 0, 0),
         opacity: 0.75,
     });
+
+
+    const pngUrl='/jaw_200_400.png';
+    const pngImageBytes = await fetch(pngUrl).then((res) => res.arrayBuffer());
+    console.log('png',pngImageBytes);
+
+    const pngImage = await pdfDoc.embedPng(pngImageBytes);
+
+    page1.drawImage(pngImage, {
+        x: 200,
+        y: 50,
+        width: 200,
+        height: 400,
+      })
+
+
+    f=prescriptions.find(el=>el.item==='denture');
+
+
+    page1.drawText(`UR`,{size:10,x:200+70,y:50+400-180});
+    page1.drawText(`UL`,{size:10,x:200+110,y:50+400-180});
+    page1.drawText(`LR`,{size:10,x:200+70,y:50+400-220});
+    page1.drawText(`LL`,{size:10,x:200+110,y:50+400-220});
+
+
+    for(let item of config.denture) {
+
+        page1.drawText(`${item.i}`,{
+                size:8,x:200+item.xi[0],y:50+400-item.xi[1]
+            
+        });
+
+
+
+        if(f?.denture.find(el=>el.l===item.l && el.q===item.q && el.r===true))  {
+            console.log(item.r,item.q,item);
+
+           
+
+            page1.drawCircle({
+                x: 200+item.xt[0],
+                y: 50+400-item.xt[1],
+                size: 8,
+                borderWidth: 0,
+                borderColor: grayscale(0.5),
+                color: rgb(0.15,0.7,0.1),
+                opacity: 0.5,
+                borderOpacity: 1
+            })
+        }  
+
+    }
     
 
     const pdfBytes = await pdfDoc.save()
@@ -358,9 +412,13 @@ onMount(async() => {
         <h4>Patient</h4>
          {#each prescriptions as row,rowIndex}
             {#if row.section==='patient'}
-            <label>{capitalize(row.item.replaceAll('_',' '))}
+            <label>
+                {#if !row.item.includes('notes')}
+                {capitalize(row.item.replaceAll('_',' '))}
+                {:else}&nbsp;
+                {/if}
             {#if row.item.includes('notes')}
-              <textarea rows=5 bind:value={row.choice} onblur={()=>store(rowIndex)}></textarea>
+              <!--<textarea rows=5 bind:value={row.choice} onblur={()=>store(rowIndex)}></textarea>-->
            
             {:else if row.item.includes('date')}
              <input type=date bind:value={row.choice} onblur={()=>store(rowIndex)}/>
@@ -380,9 +438,17 @@ onMount(async() => {
         <h4>Device</h4>
           {#each prescriptions as row,rowIndex}
              {#if row.section==='device'}
-            <label>{capitalize(row.item.replaceAll('_',' '))}
+            
+             
+             <label>
+                {#if !row.item.includes('notes')}
+                {capitalize(row.item.replaceAll('_',' '))}
+                {:else}&nbsp;
+                {/if}
+            
             {#if row.item.includes('notes')}
-             <textarea rows=5 bind:value={row.choice} onblur={()=>store(rowIndex)}></textarea>
+             <!--<textarea rows=5 bind:value={row.choice} onblur={()=>store(rowIndex)}></textarea>-->
+            
             {:else if row.item==='implant_type'}
                <input disabled type=text bind:value={row.choice}/>
             {:else if row.item==='surface_type'}
@@ -416,7 +482,11 @@ onMount(async() => {
         <h4>Denture</h4>
          {#each prescriptions as row,rowIndex}
              {#if row.section==='denture'}
-            <label>{capitalize(row.item.replaceAll('_',' '))}
+            <label>
+                {#if !row.item.includes('notes')}
+                {capitalize(row.item.replaceAll('_',' '))}
+                {:else}&nbsp;
+                {/if}
             {#if row.item==='denture'}
       
              <Denture bind:denture={row.denture} cfg={config.denture} supabase={supabase} prescription_id={row.id}></Denture>
@@ -433,9 +503,10 @@ onMount(async() => {
                     <option value={el}>{el}</option>
                 {/each}
                 </select>
-
+                
             {:else if row.item.includes('notes')}
-                 <textarea rows=5 bind:value={row.choice} onblur={()=>store(rowIndex)}></textarea>
+                 <!--<textarea rows=5 bind:value={row.choice} onblur={()=>store(rowIndex)}></textarea>  -->      
+            
             {:else}
                 <input type=text bind:value={row.choice} onblur={()=>store(rowIndex)}/>
             {/if}
